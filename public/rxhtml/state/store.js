@@ -1,7 +1,7 @@
 // Enhanced store system for RxHtmx framework
 // Provides state management with middleware support
 
-import { signal, computed, effect } from '../core/signal.js';
+import { signal } from '../core/signal.js';
 
 export class Store {
   constructor(options = {}) {

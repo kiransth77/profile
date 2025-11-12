@@ -3,7 +3,6 @@
 
 // Global effect tracking context
 let activeEffect = null;
-const effectStack = [];
 
 // Track current component for effect cleanup
 let currentComponentInstance = null;

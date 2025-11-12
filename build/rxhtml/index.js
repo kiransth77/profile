@@ -28,7 +28,7 @@ export * from './router/router.js';
 export * from './state/store.js';
 
 // Legacy signal support (for backward compatibility)
-import { signal, effect } from './signal.js';
+import { signal } from './signal.js';
 
 
 /**

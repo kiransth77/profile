@@ -1,8 +1,7 @@
 // Component system for RxHtmx framework
 // Provides component definition, lifecycle management, and rendering
 
-import { signal, computed, effect, isSignal, setCurrentComponentInstance } from './signal.js';
-import { render, h } from './dom.js';
+import { effect, isSignal, setCurrentComponentInstance } from './signal.js';
 
 // Component registry
 const componentRegistry = new Map();
@@ -438,11 +437,6 @@ export function createApp(rootComponent, props = {}) {
 // Get registered component
 export function getComponent(name) {
   return componentRegistry.get(name);
-}
-
-// Component utilities
-export function getCurrentInstance() {
-  return currentInstance;
 }
 
 // Directive system (simple implementation)

@@ -1,7 +1,7 @@
 // Router system for RxHtmx framework
 // Provides client-side routing with history API support
 
-import { signal, computed } from '../core/signal.js';
+import { signal } from '../core/signal.js';
 import { createComponent, mountComponent } from '../core/component.js';
 
 export class Router {

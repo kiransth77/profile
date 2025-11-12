@@ -3,7 +3,6 @@
 
 // Global effect tracking context
 let activeEffect = null;
-const effectStack = [];
 
 export function signal(initialValue) {
   let _value = initialValue;
