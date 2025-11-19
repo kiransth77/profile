@@ -474,22 +474,11 @@
             // Apply smooth fade-in animations to new project cards with GSAP
             const cards = container.querySelectorAll('.scroll-zoom-in');
             if (cards.length) {
-            gsap.fromTo(cards,
-                {
-                    opacity: 0,
-                    y: 30,
-                    scale: 0.95
-                },
-                {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    duration: 0.5,
-                    stagger: 0.1,
-                    ease: 'power2.out',
-                    onComplete: () => {
-                    // Add hover animations to new cards
-                    cards.forEach(card => {
+                // Ensure cards are visible immediately, then animate if needed
+                gsap.set(cards, { opacity: 1, y: 0, scale: 1 });
+                
+                // Add hover animations to new cards
+                cards.forEach(card => {
                         card.addEventListener('mouseenter', () => {
                             gsap.to(card, {
                                 y: -8,
@@ -503,14 +492,13 @@
                             gsap.to(card, {
                                 y: 0,
                                 scale: 1,
-                                duration: 0.4,
-                                ease: 'elastic.out(1, 0.5)'
+                                duration: 0.3,
+                                ease: 'power2.out'
                             });
                         });
                     });
-                }
-            });
             }
+        });
         });
         
         // Contact form handling
