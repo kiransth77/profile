@@ -557,68 +557,6 @@
         // GSAP - Register ScrollTrigger
         gsap.registerPlugin(ScrollTrigger);
         
-        // Card Stack Scrolling Effect with velocity-based animation
-        const sections = gsap.utils.toArray('section:not(#home)');
-        let scrollVelocity = 0;
-        let lastScrollY = window.scrollY;
-        
-        // Track scroll velocity
-        window.addEventListener('scroll', () => {
-            const currentScrollY = window.scrollY;
-            scrollVelocity = Math.abs(currentScrollY - lastScrollY);
-            lastScrollY = currentScrollY;
-        });
-        
-        sections.forEach((section, index) => {
-            const nextSection = sections[index + 1];
-            
-            ScrollTrigger.create({
-                trigger: section,
-                start: 'top top',
-                end: 'bottom top',
-                pin: true,
-                pinSpacing: false,
-                scrub: true,
-                onUpdate: (self) => {
-                    const progress = self.progress;
-                    const velocityFactor = Math.min(scrollVelocity / 50, 2);
-                    const duration = 0.3 / (velocityFactor + 0.5);
-                    
-                    gsap.to(section, {
-                        scale: 1 - (progress * 0.15),
-                        rotationX: progress * 8,
-                        y: -(progress * 50),
-                        filter: `brightness(${1 - progress * 0.4})`,
-                        duration: duration,
-                        ease: 'power2.out'
-                    });
-                }
-            });
-            
-            if (nextSection) {
-                ScrollTrigger.create({
-                    trigger: nextSection,
-                    start: 'top bottom',
-                    end: 'top top',
-                    scrub: true,
-                    onUpdate: (self) => {
-                        const progress = self.progress;
-                        const velocityFactor = Math.min(scrollVelocity / 50, 2);
-                        const duration = 0.3 / (velocityFactor + 0.5);
-                        
-                        gsap.to(nextSection, {
-                            y: (1 - progress) * 150,
-                            scale: 0.85 + (progress * 0.15),
-                            rotationX: (1 - progress) * -15,
-                            opacity: 0.5 + (progress * 0.5),
-                            duration: duration,
-                            ease: 'power2.out'
-                        });
-                    }
-                });
-            }
-        });
-        
         // Preloader fade-out on full load
         const preloader = document.getElementById('preloader');
         window.addEventListener('load', () => {
