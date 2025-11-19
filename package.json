@@ -1,43 +1,28 @@
 {
   "name": "profile",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
-  "author":"Kiran Shrestha",
-  "homepage": "https://kiran-qitplus.github.io/profile/",
-  "dependencies": {
-    "@testing-library/jest-dom": "^5.14.1",
-    "@testing-library/react": "^13.0.0",
-    "@testing-library/user-event": "^13.2.1",
-    "gh-pages": "^4.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.0"
-  },
+  "author": "Kiran Shrestha",
+  "description": "Personal portfolio and GitHub profile built with RxHtml framework",
+  "homepage": "https://kiransth77.github.io/profile/",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "build:css": "npx tailwindcss -i ./src/input.css -o ./public/css/styles.css --minify",
+    "watch:css": "npx tailwindcss -i ./src/input.css -o ./public/css/styles.css --watch",
+    "start": "npm run build:css && npx http-server public -p 8080 -o",
+    "dev": "npm run watch:css & npx http-server public -p 8080 -o",
+    "build": "npm run build:css && powershell -Command \"if (-Not (Test-Path build)) { New-Item -ItemType Directory -Path build } ; Copy-Item -Path public/* -Destination build/ -Recurse -Force\"",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "autoprefixer": "^10.4.22",
+    "gh-pages": "^6.3.0",
+    "http-server": "^14.1.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.18"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "dependencies": {
+    "framer-motion": "^12.23.24"
   }
 }
