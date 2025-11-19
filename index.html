@@ -454,7 +454,7 @@
             container.innerHTML = projectsData.map((project, index) => {
                 // Fallbacks for custom projects
                 const icon = project.icon || 'fas fa-briefcase';
-                const techList = project.tech || project.tags || [];
+                const techList = Array.isArray(project.tech) ? project.tech : Array.isArray(project.tags) ? project.tags : [];
                 const url = project.github || project.url || '#';
                 const isGithub = !!project.github;
                 return `
