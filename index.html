@@ -90,12 +90,11 @@
                 </div>
                 <div class="scroll-slide-right">
                     <p class="text-lg text-gray-700 mb-6">
-                        I'm a passionate software developer with expertise in building modern web applications.
-                        I love creating elegant solutions to complex problems and contributing to meaningful projects.
+                        I'm a passionate software developer with over 10 years at <strong>QIT Plus</strong>, where I am part of the core team that created <strong>Guardian IMS</strong> from the ground up.
+                        Guardian IMS is a leading disaster management and community engagement platform, used across Australia and Canada to address emergency response goals and public dashboard needs.
                     </p>
                     <p class="text-lg text-gray-700 mb-6">
-                        Currently working as a <strong>Senior Developer in Disaster Management</strong>, building critical systems
-                        that help organizations and communities prepare for, respond to, and recover from emergencies and natural disasters.
+                        My work focuses on building resilient, scalable systems for disaster management, public dashboards, and community engagement. I thrive on solving complex problems and delivering solutions that make a real impact.
                     </p>
                     <div class="flex flex-wrap gap-4">
                         <div class="flex items-center space-x-2">
@@ -299,9 +298,14 @@
         
         const skills = signal([
             {
+                category: 'Disaster Management',
+                icon: 'fas fa-shield-alt',
+                items: ['Guardian IMS', 'Incident Management', 'Community Engagement', 'Public Dashboards']
+            },
+            {
                 category: 'Frontend',
                 icon: 'fas fa-palette',
-                items: ['JavaScript', 'TypeScript', 'React', 'Vue.js', 'RxHtml', 'Tailwind CSS']
+                items: ['JavaScript', 'TypeScript', 'React', 'Vue.js', 'Tailwind CSS']
             },
             {
                 category: 'Backend',
@@ -315,7 +319,15 @@
             }
         ]);
         
-        const projects = signal([]);
+        const projects = signal([
+            {
+                name: 'Guardian IMS',
+                description: 'A disaster management and community engagement platform built from the ground up by the core team at QIT Plus. Used in Australia and Canada to address emergency response and public dashboard goals.',
+                url: 'https://www.qitplus.com/guardian-ims',
+                tags: ['Disaster Management', 'Community Engagement', 'Public Dashboard'],
+                role: 'Core Team Developer'
+            }
+        ]);
         const isLoadingProjects = signal(false);
         
         // GitHub API configuration
