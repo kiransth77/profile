@@ -565,7 +565,7 @@
             }
         });
         
-        // Hero section - Initial animation
+        // Hero section - Initial animation with name typing effect
         gsap.fromTo('#home .fade-in',
             {
                 opacity: 0,
@@ -581,6 +581,34 @@
                 delay: 0.2
             }
         );
+        
+        // Animate "Hi, I'm Kiran Shrestha" with typing and gradient effect
+        const heroName = document.getElementById('hero-name');
+        const originalName = heroName.textContent;
+        heroName.textContent = '';
+        heroName.style.background = 'linear-gradient(90deg, #fff, #a78bfa, #fff)';
+        heroName.style.backgroundSize = '200% auto';
+        heroName.style.webkitBackgroundClip = 'text';
+        heroName.style.backgroundClip = 'text';
+        heroName.style.webkitTextFillColor = 'transparent';
+        
+        // Typing animation
+        let charIndex = 0;
+        const typeInterval = setInterval(() => {
+            if (charIndex < originalName.length) {
+                heroName.textContent += originalName[charIndex];
+                charIndex++;
+            } else {
+                clearInterval(typeInterval);
+                // Animate gradient after typing completes
+                gsap.to(heroName, {
+                    backgroundPosition: '200% center',
+                    duration: 3,
+                    repeat: -1,
+                    ease: 'linear'
+                });
+            }
+        }, 100);
         
         // Use IntersectionObserver for scroll animations (no scroll interference)
         const observerOptions = {
