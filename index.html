@@ -217,7 +217,9 @@
                                 <i class="fas fa-envelope text-2xl" aria-hidden="true"></i>
                                 <div>
                                     <p class="font-semibold">Email</p>
-                                    <p id="contact-email" class="opacity-90">contact@example.com</p>
+                                    <a href="mailto:kiransth@gmail.com" class="opacity-90 hover:underline">
+                                        <span id="contact-email">kiransth@gmail.com</span>
+                                    </a>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-4">
@@ -295,7 +297,7 @@
         const profileData = signal({
             name: 'Kiran Shrestha',
             title: 'Full Stack Developer',
-            email: 'mailtokiransth@gmail.com'
+            email: 'kiransth@gmail.com'
         });
         
         const skills = signal([
