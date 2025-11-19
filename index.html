@@ -451,12 +451,18 @@
         effect(() => {
             const projectsData = projects.value;
             const container = document.getElementById('projects-container');
-            container.innerHTML = projectsData.map((project, index) => `
+            container.innerHTML = projectsData.map((project, index) => {
+                // Fallbacks for custom projects
+                const icon = project.icon || 'fas fa-briefcase';
+                const techList = project.tech || project.tags || [];
+                const url = project.github || project.url || '#';
+                const isGithub = !!project.github;
+                return `
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover scroll-zoom-in" style="transition-delay: ${index * 0.1}s">
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center">
-                                <i class="${project.icon} text-3xl text-primary mr-3"></i>
+                                <i class="${icon} text-3xl text-primary mr-3"></i>
                                 <h3 class="text-xl font-bold text-gray-800">${project.name}</h3>
                             </div>
                             ${project.stars !== undefined ? `
@@ -468,20 +474,21 @@
                         </div>
                         <p class="text-gray-600 mb-4 line-clamp-2">${project.description}</p>
                         <div class="flex flex-wrap gap-2 mb-4">
-                            ${project.tech.map(tech => `
+                            ${techList.map(tech => `
                                 <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-semibold">
                                     ${tech}
                                 </span>
                             `).join('')}
                         </div>
-                        <a href="${project.github}" target="_blank" rel="noopener noreferrer" 
-                           aria-label="View ${project.name} on GitHub"
+                        <a href="${url}" target="_blank" rel="noopener noreferrer" 
+                           aria-label="View ${project.name} on ${isGithub ? 'GitHub' : 'Website'}"
                             class="inline-flex items-center text-primary hover:text-primary-light font-semibold">
-                            View on GitHub <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i>
+                            View on ${isGithub ? 'GitHub' : 'Website'} <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i>
                         </a>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
             
             // Apply smooth fade-in animations to new project cards with GSAP
             const cards = container.querySelectorAll('.scroll-zoom-in');
