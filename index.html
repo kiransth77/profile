@@ -555,7 +555,7 @@
         document.getElementById('current-year').textContent = new Date().getFullYear();
         
         // GSAP - Register ScrollTrigger
-        gsap.registerPlugin(ScrollTrigger);
+        // GSAP animations without ScrollTrigger to prevent scroll jumping
         
         // Preloader fade-out on full load
         const preloader = document.getElementById('preloader');
@@ -565,247 +565,66 @@
             }
         });
         
-        // Hero section - "Door opening" animation
+        // Hero section - Initial animation
         gsap.fromTo('#home .fade-in',
             {
                 opacity: 0,
                 scale: 0.95,
-                rotationX: 10,
                 filter: 'blur(10px)'
             },
             {
                 opacity: 1,
                 scale: 1,
-                rotationX: 0,
                 filter: 'blur(0px)',
                 duration: 1.2,
-                ease: 'elastic.out(1, 0.75)',
+                ease: 'power2.out',
                 delay: 0.2
             }
         );
         
-        // Navigation - Links remain visible (no initial hide animation)
+        // Use IntersectionObserver for scroll animations (no scroll interference)
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
         
-        // About section - 3D card reveal
-        if (document.querySelector('.scroll-slide-left')) {
-            ScrollTrigger.create({
-                trigger: '.scroll-slide-left',
-                start: 'top 80%',
-                onEnter: () => {
-                    const lefts = document.querySelectorAll('.scroll-slide-left');
-                    if (lefts.length) {
-                        gsap.fromTo(lefts, 
-                            {
-                                opacity: 0,
-                                x: -50,
-                                scale: 0.95
-                            },
-                            {
-                                opacity: 1,
-                                x: 0,
-                                scale: 1,
-                                duration: 0.7,
-                                ease: 'power2.out'
-                            }
-                        );
-                    }
-                },
-                once: true
-            });
-        }
-        
-        if (document.querySelector('.scroll-slide-right')) {
-            ScrollTrigger.create({
-                trigger: '.scroll-slide-right',
-                start: 'top 80%',
-                onEnter: () => {
-                    const rights = document.querySelectorAll('.scroll-slide-right');
-                    if (rights.length) {
-                        gsap.fromTo(rights,
-                            {
-                                opacity: 0,
-                                x: 50,
-                                scale: 0.95
-                            },
-                            {
-                                opacity: 1,
-                                x: 0,
-                                scale: 1,
-                                duration: 0.7,
-                                ease: 'power2.out'
-                            }
-                        );
-                    }
-                },
-                once: true
-            });
-        }
-        
-        // Section titles - Typewriter effect
-        document.querySelectorAll('h2.scroll-fade-in').forEach(title => {
-            ScrollTrigger.create({
-                trigger: title,
-                start: 'top 85%',
-                onEnter: () => {
-                    const text = title.textContent;
-                    title.textContent = '';
-                    title.style.opacity = '1';
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
+                    entry.target.classList.add('animated');
                     
-                    let charIndex = 0;
-                    const typeInterval = setInterval(() => {
-                        if (charIndex < text.length) {
-                            title.textContent += text[charIndex];
-                            charIndex++;
-                        } else {
-                            clearInterval(typeInterval);
-                            // Add blinking cursor briefly
-                            const cursor = document.createElement('span');
-                            cursor.textContent = '|';
-                            title.appendChild(cursor);
-                            gsap.to(cursor, { opacity: 0, repeat: 3, yoyo: true, duration: 0.5, onComplete: () => cursor.remove() });
-                        }
-                    }, 30);
-                },
-                once: true
-            });
-        });
-        
-        // Other fade-in elements
-        document.querySelectorAll('.scroll-fade-in:not(h2)').forEach(el => {
-            ScrollTrigger.create({
-                trigger: el,
-                start: 'top 85%',
-                onEnter: () => {
-                    gsap.fromTo(el,
-                        {
-                            opacity: 0,
-                            y: 40,
-                            filter: 'blur(8px)'
-                        },
-                        {
-                            opacity: 1,
-                            y: 0,
-                            filter: 'blur(0px)',
-                            duration: 0.9,
-                            ease: 'elastic.out(1, 0.8)'
-                        }
-                    );
-                },
-                once: true
-            });
-        });
-        
-        // Skills section - Cascade with badges
-        if (document.querySelector('#skills-container')) {
-            ScrollTrigger.create({
-                trigger: '#skills-container',
-                start: 'top 75%',
-                onEnter: () => {
-                    const cards = document.querySelectorAll('#skills-container .card-hover');
-                    if (cards.length) {
-                        gsap.fromTo(cards,
-                            {
-                                opacity: 0,
-                                y: 60,
-                                rotationX: 20,
-                                scale: 0.8,
-                                filter: 'blur(6px)'
-                            },
-                            {
-                                opacity: 1,
-                                y: 0,
-                                rotationX: 0,
-                                scale: 1,
-                                filter: 'blur(0px)',
-                                duration: 0.8,
-                                stagger: 0.15,
-                                ease: 'elastic.out(1.2, 0.75)',
-                                onComplete: () => {
-                                    // Animate skill badges
-                                cards.forEach((card, cardIndex) => {
-                                    const badges = card.querySelectorAll('.skill-badge');
-                                    if (badges.length) {
-                                        gsap.fromTo(badges,
-                                            {
-                                                opacity: 0,
-                                                scale: 0,
-                                                rotation: -180
-                                            },
-                                            {
-                                                opacity: 1,
-                                                scale: 1,
-                                                rotation: 0,
-                                                duration: 0.5,
-                                                stagger: 0.05,
-                                                delay: cardIndex * 0.15,
-                                                ease: 'back.out(3)'
-                                            }
-                                        );
-                                    }
-                                });
-                            }
-                        });
-                    }
-                },
-                once: true
-            });
-        }
-        
-        // Projects - 3D flip reveal
-        if (document.querySelector('#projects-container')) {
-            ScrollTrigger.create({
-                trigger: '#projects-container',
-                start: 'top 75%',
-                onEnter: () => {
-                    const cards = document.querySelectorAll('#projects-container .scroll-zoom-in');
-                    if (cards.length) {
-                        gsap.fromTo(cards,
-                            {
-                                opacity: 0,
-                                y: 30,
-                                scale: 0.95
-                            },
-                            {
-                                opacity: 1,
-                                y: 0,
-                                scale: 1,
-                                duration: 0.5,
-                                stagger: 0.1,
-                                ease: 'power2.out'
-                            }
+                    if (entry.target.classList.contains('scroll-slide-left')) {
+                        gsap.fromTo(entry.target, 
+                            { opacity: 0, x: -50 },
+                            { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out' }
                         );
                     }
-                },
-                once: true
+                    else if (entry.target.classList.contains('scroll-slide-right')) {
+                        gsap.fromTo(entry.target,
+                            { opacity: 0, x: 50 },
+                            { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out' }
+                        );
+                    }
+                    else if (entry.target.classList.contains('scroll-fade-in')) {
+                        gsap.fromTo(entry.target,
+                            { opacity: 0, y: 30 },
+                            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }
+                        );
+                    }
+                    else if (entry.target.classList.contains('scroll-zoom-in')) {
+                        gsap.fromTo(entry.target,
+                            { opacity: 0, scale: 0.9 },
+                            { opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out' }
+                        );
+                    }
+                }
             });
-        }
+        }, observerOptions);
         
-        // Contact section
-        if (document.querySelector('#contact .scroll-zoom-in')) {
-            ScrollTrigger.create({
-                trigger: '#contact .scroll-zoom-in',
-                start: 'top 80%',
-                onEnter: () => {
-                    gsap.fromTo('#contact .scroll-zoom-in',
-                        {
-                            opacity: 0,
-                            scale: 0.85,
-                            y: 50,
-                            filter: 'blur(10px)'
-                        },
-                        {
-                            opacity: 1,
-                            scale: 1,
-                            y: 0,
-                            filter: 'blur(0px)',
-                            duration: 1,
-                            ease: 'elastic.out(1, 0.75)'
-                        }
-                    );
-                },
-                once: true
-            });
-        }
+        // Observe all animated elements
+        document.querySelectorAll('.scroll-slide-left, .scroll-slide-right, .scroll-fade-in, .scroll-zoom-in').forEach(el => {
+            observer.observe(el);
+        });
         
         // Interactive hover animations
         document.querySelectorAll('.card-hover').forEach(card => {
