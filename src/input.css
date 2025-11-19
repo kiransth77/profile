@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+    .backdrop-blur-lg {
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+    }
+    /* Semantic color utilities (WCAG-focused) */
+    .text-primary { @apply text-brand-primary; }
+    .text-primary-light { @apply text-brand-primaryLight; }
+    .text-primary-dark { @apply text-brand-primaryDark; }
+    .text-accent { @apply text-brand-accent; }
+    .bg-primary { @apply bg-brand-primary; }
+    .bg-primary-dark { @apply bg-brand-primaryDark; }
+    .bg-accent { @apply bg-brand-accent; }
+    .bg-surface { @apply bg-brand-surface; }
+    .bg-surface-alt { @apply bg-brand-surfaceAlt; }
+    .text-body { @apply text-brand-body; }
+    .text-muted { @apply text-brand-muted; }
+    .btn-primary { @apply bg-brand-primary text-white font-semibold rounded-full px-6 py-3 transition; }
+    .btn-primary:hover { @apply bg-brand-primaryLight; }
+    .btn-accent { @apply bg-brand-accent text-brand-onLight font-semibold rounded-full px-6 py-3 transition; }
+    .btn-accent:hover { @apply bg-brand-accentDark; }
+    .link { @apply text-brand-primary underline decoration-brand-primary/40 hover:decoration-brand-primaryLight hover:text-brand-primaryLight transition; }
+    .link-inverse { @apply text-brand-onDark underline decoration-brand-onDark/40 hover:text-brand-accent; }
+}
+
+/* Custom styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    perspective: 1000px;
+}
+
+.gradient-bg {
+    /* Dark accessible gradient ensuring white text contrast > 7:1 */
+    background: linear-gradient(140deg, #0F0F17 0%, #1A1B26 60%, #0F0F17 100%);
+}
+
+.card-hover {
+    transition: all 0.3s ease;
+    transform-style: preserve-3d;
+    will-change: transform;
+}
+
+.skill-badge {
+    transition: all 0.3s ease;
+    will-change: transform;
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.typing-animation {
+    overflow: hidden;
+    border-right: 3px solid #667eea;
+    white-space: nowrap;
+    animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+    from { 
+        width: 0;
+        max-width: 0;
+    }
+    to { 
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+@keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: #667eea; }
+}
+
+/* CSS compatibility fixes */
+* {
+    text-size-adjust: 100%;
+}
+
+/* Scroll animations - GSAP handles all animation states */
+/* Elements visible by default; GSAP will animate them in */
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Prevent section overlap */
+section {
+    position: relative;
+    z-index: 1;
+    background-color: inherit;
+}
+
+nav {
+    z-index: 50;
+}
+
+/* Screen reader only class for accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}

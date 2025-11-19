@@ -11,6 +11,9 @@
 # production
 # /buildk
 
+# Generated CSS is committed for GitHub Pages
+# public/css/styles.css is built from src/input.css
+
 # misc
 .DS_Store
 .env.local
