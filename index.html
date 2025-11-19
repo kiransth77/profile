@@ -557,8 +557,17 @@
         // GSAP - Register ScrollTrigger
         gsap.registerPlugin(ScrollTrigger);
         
-        // Card Stack Scrolling Effect
+        // Card Stack Scrolling Effect with velocity-based animation
         const sections = gsap.utils.toArray('section:not(#home)');
+        let scrollVelocity = 0;
+        let lastScrollY = window.scrollY;
+        
+        // Track scroll velocity
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            scrollVelocity = Math.abs(currentScrollY - lastScrollY);
+            lastScrollY = currentScrollY;
+        });
         
         sections.forEach((section, index) => {
             const nextSection = sections[index + 1];
@@ -569,15 +578,19 @@
                 end: 'bottom top',
                 pin: true,
                 pinSpacing: false,
-                scrub: 1,
+                scrub: true,
                 onUpdate: (self) => {
                     const progress = self.progress;
+                    const velocityFactor = Math.min(scrollVelocity / 50, 2);
+                    const duration = 0.3 / (velocityFactor + 0.5);
+                    
                     gsap.to(section, {
-                        scale: 1 - (progress * 0.1),
-                        rotationX: progress * 5,
-                        filter: `brightness(${1 - progress * 0.3})`,
-                        duration: 0,
-                        ease: 'none'
+                        scale: 1 - (progress * 0.15),
+                        rotationX: progress * 8,
+                        y: -(progress * 50),
+                        filter: `brightness(${1 - progress * 0.4})`,
+                        duration: duration,
+                        ease: 'power2.out'
                     });
                 }
             });
@@ -587,16 +600,19 @@
                     trigger: nextSection,
                     start: 'top bottom',
                     end: 'top top',
-                    scrub: 1,
+                    scrub: true,
                     onUpdate: (self) => {
                         const progress = self.progress;
+                        const velocityFactor = Math.min(scrollVelocity / 50, 2);
+                        const duration = 0.3 / (velocityFactor + 0.5);
+                        
                         gsap.to(nextSection, {
-                            y: (1 - progress) * 100,
-                            scale: 0.9 + (progress * 0.1),
-                            rotationX: (1 - progress) * -10,
-                            opacity: 0.7 + (progress * 0.3),
-                            duration: 0,
-                            ease: 'none'
+                            y: (1 - progress) * 150,
+                            scale: 0.85 + (progress * 0.15),
+                            rotationX: (1 - progress) * -15,
+                            opacity: 0.5 + (progress * 0.5),
+                            duration: duration,
+                            ease: 'power2.out'
                         });
                     }
                 });
