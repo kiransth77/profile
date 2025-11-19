@@ -35,7 +35,7 @@
                     <a href="https://github.com/kiransth77" target="_blank" rel="noopener noreferrer" aria-label="Visit Kiran's GitHub profile" class="text-gray-800 hover:text-primary-light transition">
                         <i class="fab fa-github text-xl" aria-hidden="true"></i>
                     </a>
-                    <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="Visit Kiran's LinkedIn profile" class="text-gray-800 hover:text-primary-light transition">
+                    <a href="https://www.linkedin.com/in/kiransth/" target="_blank" rel="noopener noreferrer" aria-label="Visit Kiran's LinkedIn profile" class="text-gray-800 hover:text-primary-light transition">
                         <i class="fab fa-linkedin text-xl" aria-hidden="true"></i>
                     </a>
                 </div>
@@ -90,12 +90,11 @@
                 </div>
                 <div class="scroll-slide-right">
                     <p class="text-lg text-gray-700 mb-6">
-                        I'm a passionate software developer with expertise in building modern web applications.
-                        I love creating elegant solutions to complex problems and contributing to meaningful projects.
+                        I'm a passionate software developer with over 10 years at <strong>QIT Plus</strong>, where I am part of the core team that created <strong>Guardian IMS</strong> from the ground up.
+                        Guardian IMS is a leading disaster management and community engagement platform, used across Australia and Canada to address emergency response goals and public dashboard needs.
                     </p>
                     <p class="text-lg text-gray-700 mb-6">
-                        Currently working as a <strong>Senior Developer in Disaster Management</strong>, building critical systems
-                        that help organizations and communities prepare for, respond to, and recover from emergencies and natural disasters.
+                        My work focuses on building resilient, scalable systems for disaster management, public dashboards, and community engagement. I thrive on solving complex problems and delivering solutions that make a real impact.
                     </p>
                     <div class="flex flex-wrap gap-4">
                         <div class="flex items-center space-x-2">
@@ -218,7 +217,9 @@
                                 <i class="fas fa-envelope text-2xl" aria-hidden="true"></i>
                                 <div>
                                     <p class="font-semibold">Email</p>
-                                    <p id="contact-email" class="opacity-90">contact@example.com</p>
+                                    <a href="mailto:kiransth@gmail.com" class="opacity-90 hover:underline">
+                                        <span id="contact-email">kiransth@gmail.com</span>
+                                    </a>
                                 </div>
                             </div>
                             <div class="flex items-center space-x-4">
@@ -234,7 +235,9 @@
                                 <i class="fab fa-linkedin text-2xl" aria-hidden="true"></i>
                                 <div>
                                     <p class="font-semibold">LinkedIn</p>
-                                    <p class="opacity-90">Connect with me</p>
+                                    <a href="https://www.linkedin.com/in/kiransth/" target="_blank" rel="noopener noreferrer" aria-label="Visit Kiran's LinkedIn profile" class="opacity-90 hover:underline">
+                                        linkedin.com/in/kiransth
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -276,7 +279,7 @@
                 <a href="https://github.com/kiransth77" target="_blank" rel="noopener noreferrer" aria-label="Visit Kiran's GitHub profile" class="hover:text-purple-400 transition">
                     <i class="fab fa-github text-2xl" aria-hidden="true"></i>
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="Visit Kiran's LinkedIn profile" class="hover:text-purple-400 transition">
+                <a href="https://www.linkedin.com/in/kiransth/" target="_blank" rel="noopener noreferrer" aria-label="Visit Kiran's LinkedIn profile" class="hover:text-purple-400 transition">
                     <i class="fab fa-linkedin text-2xl" aria-hidden="true"></i>
                 </a>
                 <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Visit Kiran's Twitter profile" class="hover:text-purple-400 transition">
@@ -294,19 +297,24 @@
         const profileData = signal({
             name: 'Kiran Shrestha',
             title: 'Full Stack Developer',
-            email: 'mailtokiransth@gmail.com'
+            email: 'kiransth@gmail.com'
         });
         
         const skills = signal([
             {
+                category: 'Disaster Management',
+                icon: 'fas fa-shield-alt',
+                items: ['Guardian IMS', 'Incident Management', 'Community Engagement', 'Public Dashboards']
+            },
+            {
                 category: 'Frontend',
                 icon: 'fas fa-palette',
-                items: ['JavaScript', 'TypeScript', 'React', 'Vue.js', 'RxHtml', 'Tailwind CSS']
+                items: ['JavaScript', 'TypeScript', 'React', 'Vue.js', 'Backbone', 'Tailwind CSS']
             },
             {
                 category: 'Backend',
                 icon: 'fas fa-server',
-                items: ['Node.js', 'Express', 'Python', 'PostgreSQL', 'MongoDB', 'Redis']
+                items: ['Node.js', 'Express', 'Python', 'C#', 'PostgreSQL', 'MongoDB', 'Redis']
             },
             {
                 category: 'Tools & Others',
@@ -315,7 +323,15 @@
             }
         ]);
         
-        const projects = signal([]);
+        const projects = signal([
+            {
+                name: 'Guardian IMS',
+                description: 'A disaster management and community engagement platform built from the ground up by the core team at QIT Plus. Used in Australia and Canada to address emergency response and public dashboard goals.',
+                url: 'https://www.qitplus.com/guardian-ims',
+                tags: ['Disaster Management', 'Community Engagement', 'Public Dashboard'],
+                role: 'Core Team Developer'
+            }
+        ]);
         const isLoadingProjects = signal(false);
         
         // GitHub API configuration
@@ -439,12 +455,18 @@
         effect(() => {
             const projectsData = projects.value;
             const container = document.getElementById('projects-container');
-            container.innerHTML = projectsData.map((project, index) => `
+            container.innerHTML = projectsData.map((project, index) => {
+                // Fallbacks for custom projects
+                const icon = project.icon || 'fas fa-briefcase';
+                const techList = Array.isArray(project.tech) ? project.tech : Array.isArray(project.tags) ? project.tags : [];
+                const url = project.github || project.url || '#';
+                const isGithub = !!project.github;
+                return `
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover scroll-zoom-in" style="transition-delay: ${index * 0.1}s">
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center">
-                                <i class="${project.icon} text-3xl text-primary mr-3"></i>
+                                <i class="${icon} text-3xl text-primary mr-3"></i>
                                 <h3 class="text-xl font-bold text-gray-800">${project.name}</h3>
                             </div>
                             ${project.stars !== undefined ? `
@@ -456,20 +478,21 @@
                         </div>
                         <p class="text-gray-600 mb-4 line-clamp-2">${project.description}</p>
                         <div class="flex flex-wrap gap-2 mb-4">
-                            ${project.tech.map(tech => `
+                            ${techList.map(tech => `
                                 <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-semibold">
                                     ${tech}
                                 </span>
                             `).join('')}
                         </div>
-                        <a href="${project.github}" target="_blank" rel="noopener noreferrer" 
-                           aria-label="View ${project.name} on GitHub"
+                        <a href="${url}" target="_blank" rel="noopener noreferrer" 
+                           aria-label="View ${project.name} on ${isGithub ? 'GitHub' : 'Website'}"
                             class="inline-flex items-center text-primary hover:text-primary-light font-semibold">
-                            View on GitHub <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i>
+                            View on ${isGithub ? 'GitHub' : 'Website'} <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i>
                         </a>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
             
             // Apply smooth fade-in animations to new project cards with GSAP
             const cards = container.querySelectorAll('.scroll-zoom-in');
@@ -532,7 +555,8 @@
         document.getElementById('current-year').textContent = new Date().getFullYear();
         
         // GSAP - Register ScrollTrigger
-        gsap.registerPlugin(ScrollTrigger);
+        // GSAP animations without ScrollTrigger to prevent scroll jumping
+        
         // Preloader fade-out on full load
         const preloader = document.getElementById('preloader');
         window.addEventListener('load', () => {
@@ -541,247 +565,94 @@
             }
         });
         
-        // Hero section - "Door opening" animation
+        // Hero section - Initial animation with name typing effect
         gsap.fromTo('#home .fade-in',
             {
                 opacity: 0,
                 scale: 0.95,
-                rotationX: 10,
                 filter: 'blur(10px)'
             },
             {
                 opacity: 1,
                 scale: 1,
-                rotationX: 0,
                 filter: 'blur(0px)',
                 duration: 1.2,
-                ease: 'elastic.out(1, 0.75)',
+                ease: 'power2.out',
                 delay: 0.2
             }
         );
         
-        // Navigation - Links remain visible (no initial hide animation)
+        // Animate "Hi, I'm Kiran Shrestha" with typing and gradient effect
+        const heroName = document.getElementById('hero-name');
+        const originalName = heroName.textContent;
+        heroName.textContent = '';
+        heroName.style.background = 'linear-gradient(90deg, #fff, #a78bfa, #fff)';
+        heroName.style.backgroundSize = '200% auto';
+        heroName.style.webkitBackgroundClip = 'text';
+        heroName.style.backgroundClip = 'text';
+        heroName.style.webkitTextFillColor = 'transparent';
         
-        // About section - 3D card reveal
-        if (document.querySelector('.scroll-slide-left')) {
-            ScrollTrigger.create({
-                trigger: '.scroll-slide-left',
-                start: 'top 80%',
-                onEnter: () => {
-                    const lefts = document.querySelectorAll('.scroll-slide-left');
-                    if (lefts.length) {
-                        gsap.fromTo(lefts, 
-                            {
-                                opacity: 0,
-                                x: -50,
-                                scale: 0.95
-                            },
-                            {
-                                opacity: 1,
-                                x: 0,
-                                scale: 1,
-                                duration: 0.7,
-                                ease: 'power2.out'
-                            }
-                        );
-                    }
-                },
-                once: true
-            });
-        }
+        // Typing animation
+        let charIndex = 0;
+        const typeInterval = setInterval(() => {
+            if (charIndex < originalName.length) {
+                heroName.textContent += originalName[charIndex];
+                charIndex++;
+            } else {
+                clearInterval(typeInterval);
+                // Animate gradient after typing completes
+                gsap.to(heroName, {
+                    backgroundPosition: '200% center',
+                    duration: 3,
+                    repeat: -1,
+                    ease: 'linear'
+                });
+            }
+        }, 100);
         
-        if (document.querySelector('.scroll-slide-right')) {
-            ScrollTrigger.create({
-                trigger: '.scroll-slide-right',
-                start: 'top 80%',
-                onEnter: () => {
-                    const rights = document.querySelectorAll('.scroll-slide-right');
-                    if (rights.length) {
-                        gsap.fromTo(rights,
-                            {
-                                opacity: 0,
-                                x: 50,
-                                scale: 0.95
-                            },
-                            {
-                                opacity: 1,
-                                x: 0,
-                                scale: 1,
-                                duration: 0.7,
-                                ease: 'power2.out'
-                            }
-                        );
-                    }
-                },
-                once: true
-            });
-        }
+        // Use IntersectionObserver for scroll animations (no scroll interference)
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
         
-        // Section titles - Typewriter effect
-        document.querySelectorAll('h2.scroll-fade-in').forEach(title => {
-            ScrollTrigger.create({
-                trigger: title,
-                start: 'top 85%',
-                onEnter: () => {
-                    const text = title.textContent;
-                    title.textContent = '';
-                    title.style.opacity = '1';
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
+                    entry.target.classList.add('animated');
                     
-                    let charIndex = 0;
-                    const typeInterval = setInterval(() => {
-                        if (charIndex < text.length) {
-                            title.textContent += text[charIndex];
-                            charIndex++;
-                        } else {
-                            clearInterval(typeInterval);
-                            // Add blinking cursor briefly
-                            const cursor = document.createElement('span');
-                            cursor.textContent = '|';
-                            title.appendChild(cursor);
-                            gsap.to(cursor, { opacity: 0, repeat: 3, yoyo: true, duration: 0.5, onComplete: () => cursor.remove() });
-                        }
-                    }, 30);
-                },
-                once: true
-            });
-        });
-        
-        // Other fade-in elements
-        document.querySelectorAll('.scroll-fade-in:not(h2)').forEach(el => {
-            ScrollTrigger.create({
-                trigger: el,
-                start: 'top 85%',
-                onEnter: () => {
-                    gsap.fromTo(el,
-                        {
-                            opacity: 0,
-                            y: 40,
-                            filter: 'blur(8px)'
-                        },
-                        {
-                            opacity: 1,
-                            y: 0,
-                            filter: 'blur(0px)',
-                            duration: 0.9,
-                            ease: 'elastic.out(1, 0.8)'
-                        }
-                    );
-                },
-                once: true
-            });
-        });
-        
-        // Skills section - Cascade with badges
-        if (document.querySelector('#skills-container')) {
-            ScrollTrigger.create({
-                trigger: '#skills-container',
-                start: 'top 75%',
-                onEnter: () => {
-                    const cards = document.querySelectorAll('#skills-container .card-hover');
-                    if (cards.length) {
-                        gsap.fromTo(cards,
-                            {
-                                opacity: 0,
-                                y: 60,
-                                rotationX: 20,
-                                scale: 0.8,
-                                filter: 'blur(6px)'
-                            },
-                            {
-                                opacity: 1,
-                                y: 0,
-                                rotationX: 0,
-                                scale: 1,
-                                filter: 'blur(0px)',
-                                duration: 0.8,
-                                stagger: 0.15,
-                                ease: 'elastic.out(1.2, 0.75)',
-                                onComplete: () => {
-                                    // Animate skill badges
-                                cards.forEach((card, cardIndex) => {
-                                    const badges = card.querySelectorAll('.skill-badge');
-                                    if (badges.length) {
-                                        gsap.fromTo(badges,
-                                            {
-                                                opacity: 0,
-                                                scale: 0,
-                                                rotation: -180
-                                            },
-                                            {
-                                                opacity: 1,
-                                                scale: 1,
-                                                rotation: 0,
-                                                duration: 0.5,
-                                                stagger: 0.05,
-                                                delay: cardIndex * 0.15,
-                                                ease: 'back.out(3)'
-                                            }
-                                        );
-                                    }
-                                });
-                            }
-                        });
-                    }
-                },
-                once: true
-            });
-        }
-        
-        // Projects - 3D flip reveal
-        if (document.querySelector('#projects-container')) {
-            ScrollTrigger.create({
-                trigger: '#projects-container',
-                start: 'top 75%',
-                onEnter: () => {
-                    const cards = document.querySelectorAll('#projects-container .scroll-zoom-in');
-                    if (cards.length) {
-                        gsap.fromTo(cards,
-                            {
-                                opacity: 0,
-                                y: 30,
-                                scale: 0.95
-                            },
-                            {
-                                opacity: 1,
-                                y: 0,
-                                scale: 1,
-                                duration: 0.5,
-                                stagger: 0.1,
-                                ease: 'power2.out'
-                            }
+                    if (entry.target.classList.contains('scroll-slide-left')) {
+                        gsap.fromTo(entry.target, 
+                            { opacity: 0, x: -50 },
+                            { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out' }
                         );
                     }
-                },
-                once: true
+                    else if (entry.target.classList.contains('scroll-slide-right')) {
+                        gsap.fromTo(entry.target,
+                            { opacity: 0, x: 50 },
+                            { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out' }
+                        );
+                    }
+                    else if (entry.target.classList.contains('scroll-fade-in')) {
+                        gsap.fromTo(entry.target,
+                            { opacity: 0, y: 30 },
+                            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }
+                        );
+                    }
+                    else if (entry.target.classList.contains('scroll-zoom-in')) {
+                        gsap.fromTo(entry.target,
+                            { opacity: 0, scale: 0.9 },
+                            { opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out' }
+                        );
+                    }
+                }
             });
-        }
+        }, observerOptions);
         
-        // Contact section
-        if (document.querySelector('#contact .scroll-zoom-in')) {
-            ScrollTrigger.create({
-                trigger: '#contact .scroll-zoom-in',
-                start: 'top 80%',
-                onEnter: () => {
-                    gsap.fromTo('#contact .scroll-zoom-in',
-                        {
-                            opacity: 0,
-                            scale: 0.85,
-                            y: 50,
-                            filter: 'blur(10px)'
-                        },
-                        {
-                            opacity: 1,
-                            scale: 1,
-                            y: 0,
-                            filter: 'blur(0px)',
-                            duration: 1,
-                            ease: 'elastic.out(1, 0.75)'
-                        }
-                    );
-                },
-                once: true
-            });
-        }
+        // Observe all animated elements
+        document.querySelectorAll('.scroll-slide-left, .scroll-slide-right, .scroll-fade-in, .scroll-zoom-in').forEach(el => {
+            observer.observe(el);
+        });
         
         // Interactive hover animations
         document.querySelectorAll('.card-hover').forEach(card => {

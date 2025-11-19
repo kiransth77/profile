@@ -101,15 +101,14 @@ html {
     scroll-behavior: smooth;
 }
 
-/* Prevent section overlap */
+/* Section positioning */
 section {
     position: relative;
     z-index: 1;
-    background-color: inherit;
 }
 
 nav {
-    z-index: 50;
+    z-index: 100;
 }
 
 /* Screen reader only class for accessibility */
