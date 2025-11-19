@@ -54,8 +54,7 @@
                     <span id="hero-title">Full Stack Developer & Creator</span>
                 </p>
                 <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto opacity-90">
-                    Passionate about building elegant solutions and innovative web applications.
-                    Creator of <a href="https://github.com/kiransth77/RxHtml" class="link" target="_blank" rel="noopener noreferrer" aria-label="View RxHtml Framework on GitHub">RxHtml Framework</a>.
+                    Senior Developer specializing in Disaster Management solutions. Passionate about building resilient systems that help communities prepare for and respond to emergencies.
                 </p>
                 <div class="flex justify-center space-x-4">
                     <a href="#projects" class="btn-primary">
@@ -92,12 +91,11 @@
                 <div class="scroll-slide-right">
                     <p class="text-lg text-gray-700 mb-6">
                         I'm a passionate software developer with expertise in building modern web applications.
-                        I love creating elegant solutions to complex problems and contributing to open-source projects.
+                        I love creating elegant solutions to complex problems and contributing to meaningful projects.
                     </p>
                     <p class="text-lg text-gray-700 mb-6">
-                        Currently working on innovative projects and exploring new technologies in the JavaScript ecosystem.
-                        I'm the creator of <strong>RxHtml</strong>, a modern reactive frontend framework that combines
-                        the power of reactive programming with component-based architecture.
+                        Currently working as a <strong>Senior Developer in Disaster Management</strong>, building critical systems
+                        that help organizations and communities prepare for, respond to, and recover from emergencies and natural disasters.
                     </p>
                     <div class="flex flex-wrap gap-4">
                         <div class="flex items-center space-x-2">
@@ -473,19 +471,23 @@
                 </div>
             `).join('');
             
-            // Re-apply 3D flip animations to new project cards with GSAP
+            // Apply smooth fade-in animations to new project cards with GSAP
             const cards = container.querySelectorAll('.scroll-zoom-in');
             if (cards.length) {
-            gsap.from(cards, {
-                opacity: 0,
-                rotationY: 90,
-                scale: 0.8,
-                filter: 'brightness(0.5)',
-                duration: 0.9,
-                stagger: 0.15,
-                ease: 'elastic.out(1, 0.8)',
-                transformPerspective: 1000,
-                onComplete: () => {
+            gsap.fromTo(cards,
+                {
+                    opacity: 0,
+                    y: 30,
+                    scale: 0.95
+                },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.5,
+                    stagger: 0.1,
+                    ease: 'power2.out',
+                    onComplete: () => {
                     // Add hover animations to new cards
                     cards.forEach(card => {
                         card.addEventListener('mouseenter', () => {
@@ -595,19 +597,15 @@
                         gsap.fromTo(lefts, 
                             {
                                 opacity: 0,
-                                x: -100,
-                                rotationY: -15,
-                                scale: 0.9,
-                                filter: 'blur(5px)'
+                                x: -50,
+                                scale: 0.95
                             },
                             {
                                 opacity: 1,
                                 x: 0,
-                                rotationY: 0,
                                 scale: 1,
-                                filter: 'blur(0px)',
-                                duration: 1,
-                                ease: 'elastic.out(1, 0.7)'
+                                duration: 0.7,
+                                ease: 'power2.out'
                             }
                         );
                     }
@@ -626,19 +624,15 @@
                         gsap.fromTo(rights,
                             {
                                 opacity: 0,
-                                x: 100,
-                                rotationY: 15,
-                                scale: 0.9,
-                                filter: 'blur(5px)'
+                                x: 50,
+                                scale: 0.95
                             },
                             {
                                 opacity: 1,
                                 x: 0,
-                                rotationY: 0,
                                 scale: 1,
-                                filter: 'blur(0px)',
-                                duration: 1,
-                                ease: 'elastic.out(1, 0.7)'
+                                duration: 0.7,
+                                ease: 'power2.out'
                             }
                         );
                     }
@@ -768,19 +762,16 @@
                         gsap.fromTo(cards,
                             {
                                 opacity: 0,
-                                rotationY: 90,
-                                scale: 0.8,
-                                filter: 'brightness(0.5)'
+                                y: 30,
+                                scale: 0.95
                             },
                             {
                                 opacity: 1,
-                                rotationY: 0,
+                                y: 0,
                                 scale: 1,
-                                filter: 'brightness(1)',
-                                duration: 0.9,
-                                stagger: 0.15,
-                                ease: 'elastic.out(1, 0.8)',
-                                transformPerspective: 1000
+                                duration: 0.5,
+                                stagger: 0.1,
+                                ease: 'power2.out'
                             }
                         );
                     }
