@@ -128,11 +128,46 @@
     </section>
 
     <!-- Projects Section -->
-    <section id="projects" class="py-20 bg-white">
+    <section id="projects" class="py-20 bg-gray-900 text-white relative overflow-hidden">
         <div class="max-w-6xl mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center mb-12 text-gray-800 scroll-fade-in">
+            <h2 class="text-4xl font-bold text-center mb-4 scroll-fade-in">
                 Featured Projects
             </h2>
+            <p class="text-center text-gray-400 mb-12">Click on the cube to explore projects</p>
+            
+            <!-- 3D Cube Container -->
+            <div class="flex justify-center mb-12">
+                <div id="cube-scene" style="width: 300px; height: 300px; perspective: 1000px;">
+                    <div id="project-cube" style="width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transform: translateZ(-150px);">
+                        <!-- Cube will be generated here -->
+                    </div>
+                    
+                    <!-- Shattered pieces container -->
+                    <div id="shattered-pieces" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; transform-style: preserve-3d;"></div>
+                </div>
+            </div>
+            
+            <!-- Project Detail Modal -->
+            <div id="project-detail-modal" style="display: none;" class="fixed inset-0 z-50 items-center justify-center bg-black/80 backdrop-blur-sm">
+                <div class="bg-gray-800 rounded-2xl max-w-3xl w-full mx-4 shadow-2xl transform scale-0" id="modal-content">
+                    <div class="p-8">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 id="modal-project-name" class="text-3xl font-bold mb-2"></h3>
+                                <p id="modal-project-description" class="text-gray-300"></p>
+                            </div>
+                            <button id="modal-close" class="text-gray-400 hover:text-white transition">
+                                <i class="fas fa-times text-2xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div id="modal-project-tech" class="flex flex-wrap gap-2 mb-6"></div>
+                        
+                        <div id="modal-project-links" class="flex gap-4"></div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="flex justify-center mb-8">
                 <button id="load-github-projects" class="btn-primary scroll-fade-in">
                     <i class="fab fa-github mr-2"></i>Load Projects from GitHub
@@ -291,469 +326,109 @@
 
     <!-- RxHtml Framework Integration -->
     <script type="module">
-        import { signal, effect } from './rxhtml/core/signal.js';
-        
-        // Initialize reactive state
-        const profileData = signal({
-            name: 'Kiran Shrestha',
-            title: 'Full Stack Developer',
-            email: 'kiransth@gmail.com'
-        });
-        
-        const skills = signal([
-            {
-                category: 'Disaster Management',
-                icon: 'fas fa-shield-alt',
-                items: ['Guardian IMS', 'Incident Management', 'Community Engagement', 'Public Dashboards']
-            },
-            {
-                category: 'Frontend',
-                icon: 'fas fa-palette',
-                items: ['JavaScript', 'TypeScript', 'React', 'Vue.js', 'Backbone', 'Tailwind CSS']
-            },
-            {
-                category: 'Backend',
-                icon: 'fas fa-server',
-                items: ['Node.js', 'Express', 'Python', 'C#', 'PostgreSQL', 'MongoDB', 'Redis']
-            },
-            {
-                category: 'Tools & Others',
-                icon: 'fas fa-tools',
-                items: ['Git', 'Docker', 'AWS', 'CI/CD', 'Jest', 'Webpack']
-            }
-        ]);
-        
-        const projects = signal([
-            {
-                name: 'Guardian IMS',
-                description: 'A disaster management and community engagement platform built from the ground up by the core team at QIT Plus. Used in Australia and Canada to address emergency response and public dashboard goals.',
-                url: 'https://www.qitplus.com/guardian-ims',
-                tags: ['Disaster Management', 'Community Engagement', 'Public Dashboard'],
-                role: 'Core Team Developer'
-            }
-        ]);
-        const isLoadingProjects = signal(false);
-        
-        // GitHub API configuration
-        const GITHUB_USERNAME = 'kiransth77';
-        const GITHUB_API_URL = `https://api.github.com/users/${GITHUB_USERNAME}/repos`;
-        
-        // Function to fetch GitHub repositories
-        async function fetchGitHubProjects() {
-            try {
-                isLoadingProjects.value = true;
-                const loading = document.getElementById('projects-loading');
-                loading.classList.remove('hidden');
-                loading.setAttribute('aria-busy', 'true');
-                document.getElementById('load-github-projects').classList.add('hidden');
-                
-                const response = await fetch(`${GITHUB_API_URL}?sort=updated&per_page=12`);
-                if (!response.ok) throw new Error('Failed to fetch repositories');
-                
-                const repos = await response.json();
-                
-                // Filter and map repositories to project format
-                const githubProjects = repos
-                    .filter(repo => !repo.fork && !repo.private)
-                    .map(repo => ({
-                        name: repo.name,
-                        description: repo.description || 'No description available',
-                        tech: repo.topics && repo.topics.length > 0 
-                            ? repo.topics.slice(0, 3) 
-                            : [repo.language || 'Code'].filter(Boolean),
-                        github: repo.html_url,
-                        icon: getIconForRepo(repo),
-                        stars: repo.stargazers_count,
-                        language: repo.language
-                    }));
-                
-                projects.value = githubProjects;
-                loading.setAttribute('aria-busy', 'false');
-                loading.classList.add('hidden');
-            } catch (error) {
-                console.error('Error fetching GitHub projects:', error);
-                document.getElementById('projects-loading').classList.add('hidden');
-                document.getElementById('load-github-projects').classList.remove('hidden');
-                
-                // Fallback to default projects
-                projects.value = [
-                    {
-                        name: 'RxHtml Framework',
-                        description: 'A modern reactive frontend framework with components, routing, and state management.',
-                        tech: ['JavaScript', 'RxJS', 'HTMX'],
-                        github: 'https://github.com/kiransth77/RxHtml',
-                        icon: 'fas fa-code',
-                        stars: 0
-                    },
-                    {
-                        name: 'Portfolio Website',
-                        description: 'Personal portfolio and blog built with modern web technologies.',
-                        tech: ['RxHtml', 'Tailwind CSS', 'Node.js'],
-                        github: 'https://github.com/kiransth77/profile',
-                        icon: 'fas fa-laptop-code',
-                        stars: 0
-                    }
-                ];
-            }
-        }
-        
-        // Function to determine icon based on repo
-        function getIconForRepo(repo) {
-            const name = repo.name.toLowerCase();
-            if (name.includes('framework') || name.includes('rxhtml')) return 'fas fa-code';
-            if (name.includes('web') || name.includes('portfolio')) return 'fas fa-laptop-code';
-            if (name.includes('api') || name.includes('backend')) return 'fas fa-server';
-            if (name.includes('mobile') || name.includes('app')) return 'fas fa-mobile-alt';
-            if (name.includes('bot')) return 'fas fa-robot';
-            if (name.includes('game')) return 'fas fa-gamepad';
-            if (name.includes('tool')) return 'fas fa-tools';
-            return 'fas fa-folder-open';
-        }
-        
-        // Load GitHub projects button handler
-        document.getElementById('load-github-projects').addEventListener('click', fetchGitHubProjects);
-        
-        // Load default projects on page load
-        // fetchGitHubProjects(); // Disabled automatic load to keep button visible for user-triggered fetch
-        
-        const contactForm = signal({
-            name: '',
-            email: '',
-            message: ''
-        });
-        
-        // Reactive effects
-        effect(() => {
-            const data = profileData.value;
-            document.getElementById('hero-name').textContent = data.name;
-            document.getElementById('hero-title').textContent = data.title;
-            document.getElementById('contact-email').textContent = data.email;
-        });
-        
-        // Render skills
-        effect(() => {
-            const skillsData = skills.value;
-            const container = document.getElementById('skills-container');
-            container.innerHTML = skillsData.map(skillGroup => `
+var wo=Object.create;var Yn=Object.defineProperty;var Eo=Object.getOwnPropertyDescriptor;var So=Object.getOwnPropertyNames;var Co=Object.getPrototypeOf,Ro=Object.prototype.hasOwnProperty;var Lo=(Qr,Wr)=>()=>(Qr&&(Wr=Qr(Qr=0)),Wr);var To=(Qr,Wr)=>()=>(Wr||Qr((Wr={exports:{}}).exports,Wr),Wr.exports),Ho=(Qr,Wr)=>{for(var Gr in Wr)Yn(Qr,Gr,{get:Wr[Gr],enumerable:!0})},Io=(Qr,Wr,Gr,Jr)=>{if(Wr&&typeof Wr=="object"||typeof Wr=="function")for(let Zr of So(Wr))!Ro.call(Qr,Zr)&&Zr!==Gr&&Yn(Qr,Zr,{get:()=>Wr[Zr],enumerable:!(Jr=Eo(Wr,Zr))||Jr.enumerable});return Qr};var Ao=(Qr,Wr,Gr)=>(Gr=Qr!=null?wo(Co(Qr)):{},Io(Wr||!Qr||!Qr.__esModule?Yn(Gr,"default",{value:Qr,enumerable:!0}):Gr,Qr));var co=To((exports,module)=>{(function(Qr,Wr){typeof define=="function"&&define.amd?define([],Wr):typeof module=="object"&&module.exports?module.exports=Wr():Qr.htmx=Qr.htmx||Wr()})(typeof self<"u"?self:exports,function(){return function(){"use strict";var Q={onLoad:F,process:zt,on:de,off:ge,trigger:ce,ajax:Nr,find:C,findAll:f,closest:v,values:function(Qr,Wr){var Gr=dr(Qr,Wr||"post");return Gr.values},remove:_,addClass:z,removeClass:n,toggleClass:$,takeClass:W,defineExtension:Ur,removeExtension:Br,logAll:V,logNone:j,logger:null,config:{historyEnabled:!0,historyCacheSize:10,refreshOnHistoryMiss:!1,defaultSwapStyle:"innerHTML",defaultSwapDelay:0,defaultSettleDelay:20,includeIndicatorStyles:!0,indicatorClass:"htmx-indicator",requestClass:"htmx-request",addedClass:"htmx-added",settlingClass:"htmx-settling",swappingClass:"htmx-swapping",allowEval:!0,allowScriptTags:!0,inlineScriptNonce:"",attributesToSettle:["class","style","width","height"],withCredentials:!1,timeout:0,wsReconnectDelay:"full-jitter",wsBinaryType:"blob",disableSelector:"[hx-disable], [data-hx-disable]",useTemplateFragments:!1,scrollBehavior:"smooth",defaultFocusScroll:!1,getCacheBusterParam:!1,globalViewTransitions:!1,methodsThatUseUrlParams:["get"],selfRequestsOnly:!1,ignoreTitle:!1,scrollIntoViewOnBoost:!0,triggerSpecsCache:null},parseInterval:d,_:t,createEventSource:function(Qr){return new EventSource(Qr,{withCredentials:!0})},createWebSocket:function(Qr){var Wr=new WebSocket(Qr,[]);return Wr.binaryType=Q.config.wsBinaryType,Wr},version:"1.9.12"},r={addTriggerHandler:Lt,bodyContains:se,canAccessLocalStorage:U,findThisElement:xe,filterValues:yr,hasAttribute:o,getAttributeValue:te,getClosestAttributeValue:ne,getClosestMatch:c,getExpressionVars:Hr,getHeaders:xr,getInputValues:dr,getInternalData:ae,getSwapSpecification:wr,getTriggerSpecs:it,getTarget:ye,makeFragment:l,mergeObjects:le,makeSettleInfo:T,oobSwap:Ee,querySelectorExt:ue,selectAndSwap:je,settleImmediately:nr,shouldCancel:ut,triggerEvent:ce,triggerErrorEvent:fe,withExtensions:R},w=["get","post","put","delete","patch"],i=w.map(function(Qr){return"[hx-"+Qr+"], [data-hx-"+Qr+"]"}).join(", "),S=e("head"),q=e("title"),H=e("svg",!0);function e(Qr,Wr){return new RegExp("<"+Qr+"(\\s[^>]*>|>)([\\s\\S]*?)<\\/"+Qr+">",Wr?"gim":"im")}function d(Qr){if(Qr==null)return;let Wr=NaN;return Qr.slice(-2)=="ms"?Wr=parseFloat(Qr.slice(0,-2)):Qr.slice(-1)=="s"?Wr=parseFloat(Qr.slice(0,-1))*1e3:Qr.slice(-1)=="m"?Wr=parseFloat(Qr.slice(0,-1))*1e3*60:Wr=parseFloat(Qr),isNaN(Wr)?void 0:Wr}function ee(Qr,Wr){return Qr.getAttribute&&Qr.getAttribute(Wr)}function o(Qr,Wr){return Qr.hasAttribute&&(Qr.hasAttribute(Wr)||Qr.hasAttribute("data-"+Wr))}function te(Qr,Wr){return ee(Qr,Wr)||ee(Qr,"data-"+Wr)}function u(Qr){return Qr.parentElement}function re(){return document}function c(Qr,Wr){for(;Qr&&!Wr(Qr);)Qr=u(Qr);return Qr||null}function L(Qr,Wr,Gr){var Jr=te(Wr,Gr),Zr=te(Wr,"hx-disinherit");return Qr!==Wr&&Zr&&(Zr==="*"||Zr.split(" ").indexOf(Gr)>=0)?"unset":Jr}function ne(Qr,Wr){var Gr=null;if(c(Qr,function(Jr){return Gr=L(Qr,Jr,Wr)}),Gr!=="unset")return Gr}function h(Qr,Wr){var Gr=Qr.matches||Qr.matchesSelector||Qr.msMatchesSelector||Qr.mozMatchesSelector||Qr.webkitMatchesSelector||Qr.oMatchesSelector;return Gr&&Gr.call(Qr,Wr)}function A(Qr){var Wr=/<([a-z][^\/\0>\x20\t\r\n\f]*)/i,Gr=Wr.exec(Qr);return Gr?Gr[1].toLowerCase():""}function s(Qr,Wr){for(var Gr=new DOMParser,Jr=Gr.parseFromString(Qr,"text/html"),Zr=Jr.body;Wr>0;)Wr--,Zr=Zr.firstChild;return Zr==null&&(Zr=re().createDocumentFragment()),Zr}function N(Qr){return/<body/.test(Qr)}function l(Qr){var Wr=!N(Qr),Gr=A(Qr),Jr=Qr;if(Gr==="head"&&(Jr=Jr.replace(S,"")),Q.config.useTemplateFragments&&Wr){var Zr=s("<body><template>"+Jr+"</template></body>",0),Kr=Zr.querySelector("template").content;return Q.config.allowScriptTags?oe(Kr.querySelectorAll("script"),function(Yr){Q.config.inlineScriptNonce&&(Yr.nonce=Q.config.inlineScriptNonce),Yr.htmxExecuted=navigator.userAgent.indexOf("Firefox")===-1}):oe(Kr.querySelectorAll("script"),function(Yr){_(Yr)}),Kr}switch(Gr){case"thead":case"tbody":case"tfoot":case"colgroup":case"caption":return s("<table>"+Jr+"</table>",1);case"col":return s("<table><colgroup>"+Jr+"</colgroup></table>",2);case"tr":return s("<table><tbody>"+Jr+"</tbody></table>",2);case"td":case"th":return s("<table><tbody><tr>"+Jr+"</tr></tbody></table>",3);case"script":case"style":return s("<div>"+Jr+"</div>",1);default:return s(Jr,0)}}function ie(Qr){Qr&&Qr()}function I(Qr,Wr){return Object.prototype.toString.call(Qr)==="[object "+Wr+"]"}function k(Qr){return I(Qr,"Function")}function P(Qr){return I(Qr,"Object")}function ae(Qr){var Wr="htmx-internal-data",Gr=Qr[Wr];return Gr||(Gr=Qr[Wr]={}),Gr}function M(Qr){var Wr=[];if(Qr)for(var Gr=0;Gr<Qr.length;Gr++)Wr.push(Qr[Gr]);return Wr}function oe(Qr,Wr){if(Qr)for(var Gr=0;Gr<Qr.length;Gr++)Wr(Qr[Gr])}function X(Qr){var Wr=Qr.getBoundingClientRect(),Gr=Wr.top,Jr=Wr.bottom;return Gr<window.innerHeight&&Jr>=0}function se(Qr){return Qr.getRootNode&&Qr.getRootNode()instanceof window.ShadowRoot?re().body.contains(Qr.getRootNode().host):re().body.contains(Qr)}function D(Qr){return Qr.trim().split(/\s+/)}function le(Qr,Wr){for(var Gr in Wr)Wr.hasOwnProperty(Gr)&&(Qr[Gr]=Wr[Gr]);return Qr}function E(Qr){try{return JSON.parse(Qr)}catch(Wr){return b(Wr),null}}function U(){var Qr="htmx:localStorageTest";try{return localStorage.setItem(Qr,Qr),localStorage.removeItem(Qr),!0}catch{return!1}}function B(Qr){try{var Wr=new URL(Qr);return Wr&&(Qr=Wr.pathname+Wr.search),/^\/$/.test(Qr)||(Qr=Qr.replace(/\/+$/,"")),Qr}catch{return Qr}}function t(e){return Tr(re().body,function(){return eval(e)})}function F(Qr){var Wr=Q.on("htmx:load",function(Gr){Qr(Gr.detail.elt)});return Wr}function V(){Q.logger=function(Qr,Wr,Gr){console&&console.log(Wr,Qr,Gr)}}function j(){Q.logger=null}function C(Qr,Wr){return Wr?Qr.querySelector(Wr):C(re(),Qr)}function f(Qr,Wr){return Wr?Qr.querySelectorAll(Wr):f(re(),Qr)}function _(Qr,Wr){Qr=p(Qr),Wr?setTimeout(function(){_(Qr),Qr=null},Wr):Qr.parentElement.removeChild(Qr)}function z(Qr,Wr,Gr){Qr=p(Qr),Gr?setTimeout(function(){z(Qr,Wr),Qr=null},Gr):Qr.classList&&Qr.classList.add(Wr)}function n(Qr,Wr,Gr){Qr=p(Qr),Gr?setTimeout(function(){n(Qr,Wr),Qr=null},Gr):Qr.classList&&(Qr.classList.remove(Wr),Qr.classList.length===0&&Qr.removeAttribute("class"))}function $(Qr,Wr){Qr=p(Qr),Qr.classList.toggle(Wr)}function W(Qr,Wr){Qr=p(Qr),oe(Qr.parentElement.children,function(Gr){n(Gr,Wr)}),z(Qr,Wr)}function v(Qr,Wr){if(Qr=p(Qr),Qr.closest)return Qr.closest(Wr);do if(Qr==null||h(Qr,Wr))return Qr;while(Qr=Qr&&u(Qr));return null}function g(Qr,Wr){return Qr.substring(0,Wr.length)===Wr}function G(Qr,Wr){return Qr.substring(Qr.length-Wr.length)===Wr}function J(Qr){var Wr=Qr.trim();return g(Wr,"<")&&G(Wr,"/>")?Wr.substring(1,Wr.length-2):Wr}function Z(Qr,Wr){return Wr.indexOf("closest ")===0?[v(Qr,J(Wr.substr(8)))]:Wr.indexOf("find ")===0?[C(Qr,J(Wr.substr(5)))]:Wr==="next"?[Qr.nextElementSibling]:Wr.indexOf("next ")===0?[K(Qr,J(Wr.substr(5)))]:Wr==="previous"?[Qr.previousElementSibling]:Wr.indexOf("previous ")===0?[Y(Qr,J(Wr.substr(9)))]:Wr==="document"?[document]:Wr==="window"?[window]:Wr==="body"?[document.body]:re().querySelectorAll(J(Wr))}var K=function(Qr,Wr){for(var Gr=re().querySelectorAll(Wr),Jr=0;Jr<Gr.length;Jr++){var Zr=Gr[Jr];if(Zr.compareDocumentPosition(Qr)===Node.DOCUMENT_POSITION_PRECEDING)return Zr}},Y=function(Qr,Wr){for(var Gr=re().querySelectorAll(Wr),Jr=Gr.length-1;Jr>=0;Jr--){var Zr=Gr[Jr];if(Zr.compareDocumentPosition(Qr)===Node.DOCUMENT_POSITION_FOLLOWING)return Zr}};function ue(Qr,Wr){return Wr?Z(Qr,Wr)[0]:Z(re().body,Qr)[0]}function p(Qr){return I(Qr,"String")?C(Qr):Qr}function ve(Qr,Wr,Gr){return k(Wr)?{target:re().body,event:Qr,listener:Wr}:{target:p(Qr),event:Wr,listener:Gr}}function de(Qr,Wr,Gr){jr(function(){var Zr=ve(Qr,Wr,Gr);Zr.target.addEventListener(Zr.event,Zr.listener)});var Jr=k(Wr);return Jr?Wr:Gr}function ge(Qr,Wr,Gr){return jr(function(){var Jr=ve(Qr,Wr,Gr);Jr.target.removeEventListener(Jr.event,Jr.listener)}),k(Wr)?Wr:Gr}var pe=re().createElement("output");function me(Qr,Wr){var Gr=ne(Qr,Wr);if(Gr){if(Gr==="this")return[xe(Qr,Wr)];var Jr=Z(Qr,Gr);return Jr.length===0?(b('The selector "'+Gr+'" on '+Wr+" returned no matches!"),[pe]):Jr}}function xe(Qr,Wr){return c(Qr,function(Gr){return te(Gr,Wr)!=null})}function ye(Qr){var Wr=ne(Qr,"hx-target");if(Wr)return Wr==="this"?xe(Qr,"hx-target"):ue(Qr,Wr);var Gr=ae(Qr);return Gr.boosted?re().body:Qr}function be(Qr){for(var Wr=Q.config.attributesToSettle,Gr=0;Gr<Wr.length;Gr++)if(Qr===Wr[Gr])return!0;return!1}function we(Qr,Wr){oe(Qr.attributes,function(Gr){!Wr.hasAttribute(Gr.name)&&be(Gr.name)&&Qr.removeAttribute(Gr.name)}),oe(Wr.attributes,function(Gr){be(Gr.name)&&Qr.setAttribute(Gr.name,Gr.value)})}function Se(Qr,Wr){for(var Gr=Fr(Wr),Jr=0;Jr<Gr.length;Jr++){var Zr=Gr[Jr];try{if(Zr.isInlineSwap(Qr))return!0}catch(Kr){b(Kr)}}return Qr==="outerHTML"}function Ee(Qr,Wr,Gr){var Jr="#"+ee(Wr,"id"),Zr="outerHTML";Qr==="true"||(Qr.indexOf(":")>0?(Zr=Qr.substr(0,Qr.indexOf(":")),Jr=Qr.substr(Qr.indexOf(":")+1,Qr.length)):Zr=Qr);var Kr=re().querySelectorAll(Jr);return Kr?(oe(Kr,function(Yr){var tn,en=Wr.cloneNode(!0);tn=re().createDocumentFragment(),tn.appendChild(en),Se(Zr,Yr)||(tn=en);var rn={shouldSwap:!0,target:Yr,fragment:tn};ce(Yr,"htmx:oobBeforeSwap",rn)&&(Yr=rn.target,rn.shouldSwap&&Fe(Zr,Yr,Yr,tn,Gr),oe(Gr.elts,function(nn){ce(nn,"htmx:oobAfterSwap",rn)}))}),Wr.parentNode.removeChild(Wr)):(Wr.parentNode.removeChild(Wr),fe(re().body,"htmx:oobErrorNoTarget",{content:Wr})),Qr}function Ce(Qr,Wr,Gr){var Jr=ne(Qr,"hx-select-oob");if(Jr)for(var Zr=Jr.split(","),Kr=0;Kr<Zr.length;Kr++){var Yr=Zr[Kr].split(":",2),tn=Yr[0].trim();tn.indexOf("#")===0&&(tn=tn.substring(1));var en=Yr[1]||"true",rn=Wr.querySelector("#"+tn);rn&&Ee(en,rn,Gr)}oe(f(Wr,"[hx-swap-oob], [data-hx-swap-oob]"),function(nn){var on=te(nn,"hx-swap-oob");on!=null&&Ee(on,nn,Gr)})}function Re(Qr){oe(f(Qr,"[hx-preserve], [data-hx-preserve]"),function(Wr){var Gr=te(Wr,"id"),Jr=re().getElementById(Gr);Jr!=null&&Wr.parentNode.replaceChild(Jr,Wr)})}function Te(Qr,Wr,Gr){oe(Wr.querySelectorAll("[id]"),function(Jr){var Zr=ee(Jr,"id");if(Zr&&Zr.length>0){var Kr=Zr.replace("'","\\'"),Yr=Jr.tagName.replace(":","\\:"),tn=Qr.querySelector(Yr+"[id='"+Kr+"']");if(tn&&tn!==Qr){var en=Jr.cloneNode();we(Jr,tn),Gr.tasks.push(function(){we(Jr,en)})}}})}function Oe(Qr){return function(){n(Qr,Q.config.addedClass),zt(Qr),Nt(Qr),qe(Qr),ce(Qr,"htmx:load")}}function qe(Qr){var Wr="[autofocus]",Gr=h(Qr,Wr)?Qr:Qr.querySelector(Wr);Gr?.focus()}function a(Qr,Wr,Gr,Jr){for(Te(Qr,Gr,Jr);Gr.childNodes.length>0;){var Zr=Gr.firstChild;z(Zr,Q.config.addedClass),Qr.insertBefore(Zr,Wr),Zr.nodeType!==Node.TEXT_NODE&&Zr.nodeType!==Node.COMMENT_NODE&&Jr.tasks.push(Oe(Zr))}}function He(Qr,Wr){for(var Gr=0;Gr<Qr.length;)Wr=(Wr<<5)-Wr+Qr.charCodeAt(Gr++)|0;return Wr}function Le(Qr){var Wr=0;if(Qr.attributes)for(var Gr=0;Gr<Qr.attributes.length;Gr++){var Jr=Qr.attributes[Gr];Jr.value&&(Wr=He(Jr.name,Wr),Wr=He(Jr.value,Wr))}return Wr}function Ae(Qr){var Wr=ae(Qr);if(Wr.onHandlers){for(var Gr=0;Gr<Wr.onHandlers.length;Gr++){let Jr=Wr.onHandlers[Gr];Qr.removeEventListener(Jr.event,Jr.listener)}delete Wr.onHandlers}}function Ne(Qr){var Wr=ae(Qr);Wr.timeout&&clearTimeout(Wr.timeout),Wr.webSocket&&Wr.webSocket.close(),Wr.sseEventSource&&Wr.sseEventSource.close(),Wr.listenerInfos&&oe(Wr.listenerInfos,function(Gr){Gr.on&&Gr.on.removeEventListener(Gr.trigger,Gr.listener)}),Ae(Qr),oe(Object.keys(Wr),function(Gr){delete Wr[Gr]})}function m(Qr){ce(Qr,"htmx:beforeCleanupElement"),Ne(Qr),Qr.children&&oe(Qr.children,function(Wr){m(Wr)})}function Ie(Qr,Wr,Gr){if(Qr.tagName==="BODY")return Ue(Qr,Wr,Gr);var Jr,Zr=Qr.previousSibling;for(a(u(Qr),Qr,Wr,Gr),Zr==null?Jr=u(Qr).firstChild:Jr=Zr.nextSibling,Gr.elts=Gr.elts.filter(function(Kr){return Kr!=Qr});Jr&&Jr!==Qr;)Jr.nodeType===Node.ELEMENT_NODE&&Gr.elts.push(Jr),Jr=Jr.nextElementSibling;m(Qr),u(Qr).removeChild(Qr)}function ke(Qr,Wr,Gr){return a(Qr,Qr.firstChild,Wr,Gr)}function Pe(Qr,Wr,Gr){return a(u(Qr),Qr,Wr,Gr)}function Me(Qr,Wr,Gr){return a(Qr,null,Wr,Gr)}function Xe(Qr,Wr,Gr){return a(u(Qr),Qr.nextSibling,Wr,Gr)}function De(Qr,Wr,Gr){return m(Qr),u(Qr).removeChild(Qr)}function Ue(Qr,Wr,Gr){var Jr=Qr.firstChild;if(a(Qr,Jr,Wr,Gr),Jr){for(;Jr.nextSibling;)m(Jr.nextSibling),Qr.removeChild(Jr.nextSibling);m(Jr),Qr.removeChild(Jr)}}function Be(Qr,Wr,Gr){var Jr=Gr||ne(Qr,"hx-select");if(Jr){var Zr=re().createDocumentFragment();oe(Wr.querySelectorAll(Jr),function(Kr){Zr.appendChild(Kr)}),Wr=Zr}return Wr}function Fe(Qr,Wr,Gr,Jr,Zr){switch(Qr){case"none":return;case"outerHTML":Ie(Gr,Jr,Zr);return;case"afterbegin":ke(Gr,Jr,Zr);return;case"beforebegin":Pe(Gr,Jr,Zr);return;case"beforeend":Me(Gr,Jr,Zr);return;case"afterend":Xe(Gr,Jr,Zr);return;case"delete":De(Gr,Jr,Zr);return;default:for(var Kr=Fr(Wr),Yr=0;Yr<Kr.length;Yr++){var tn=Kr[Yr];try{var en=tn.handleSwap(Qr,Gr,Jr,Zr);if(en){if(typeof en.length<"u")for(var rn=0;rn<en.length;rn++){var nn=en[rn];nn.nodeType!==Node.TEXT_NODE&&nn.nodeType!==Node.COMMENT_NODE&&Zr.tasks.push(Oe(nn))}return}}catch(on){b(on)}}Qr==="innerHTML"?Ue(Gr,Jr,Zr):Fe(Q.config.defaultSwapStyle,Wr,Gr,Jr,Zr)}}function Ve(Qr){if(Qr.indexOf("<title")>-1){var Wr=Qr.replace(H,""),Gr=Wr.match(q);if(Gr)return Gr[2]}}function je(Qr,Wr,Gr,Jr,Zr,Kr){Zr.title=Ve(Jr);var Yr=l(Jr);if(Yr)return Ce(Gr,Yr,Zr),Yr=Be(Gr,Yr,Kr),Re(Yr),Fe(Qr,Gr,Wr,Yr,Zr)}function _e(Qr,Wr,Gr){var Jr=Qr.getResponseHeader(Wr);if(Jr.indexOf("{")===0){var Zr=E(Jr);for(var Kr in Zr)if(Zr.hasOwnProperty(Kr)){var Yr=Zr[Kr];P(Yr)||(Yr={value:Yr}),ce(Gr,Kr,Yr)}}else for(var tn=Jr.split(","),en=0;en<tn.length;en++)ce(Gr,tn[en].trim(),[])}var ze=/\s/,x=/[\s,]/,$e=/[_$a-zA-Z]/,We=/[_$a-zA-Z0-9]/,Ge=['"',"'","/"],Je=/[^\s]/,Ze=/[{(]/,Ke=/[})]/;function Ye(Qr){for(var Wr=[],Gr=0;Gr<Qr.length;){if($e.exec(Qr.charAt(Gr))){for(var Jr=Gr;We.exec(Qr.charAt(Gr+1));)Gr++;Wr.push(Qr.substr(Jr,Gr-Jr+1))}else if(Ge.indexOf(Qr.charAt(Gr))!==-1){var Zr=Qr.charAt(Gr),Jr=Gr;for(Gr++;Gr<Qr.length&&Qr.charAt(Gr)!==Zr;)Qr.charAt(Gr)==="\\"&&Gr++,Gr++;Wr.push(Qr.substr(Jr,Gr-Jr+1))}else{var Kr=Qr.charAt(Gr);Wr.push(Kr)}Gr++}return Wr}function Qe(Qr,Wr,Gr){return $e.exec(Qr.charAt(0))&&Qr!=="true"&&Qr!=="false"&&Qr!=="this"&&Qr!==Gr&&Wr!=="."}function et(Qr,Wr,Gr){if(Wr[0]==="["){Wr.shift();for(var Jr=1,Zr=" return (function("+Gr+"){ return (",Kr=null;Wr.length>0;){var Yr=Wr[0];if(Yr==="]"){if(Jr--,Jr===0){Kr===null&&(Zr=Zr+"true"),Wr.shift(),Zr+=")})";try{var tn=Tr(Qr,function(){return Function(Zr)()},function(){return!0});return tn.source=Zr,tn}catch(en){return fe(re().body,"htmx:syntax:error",{error:en,source:Zr}),null}}}else Yr==="["&&Jr++;Qe(Yr,Kr,Gr)?Zr+="(("+Gr+"."+Yr+") ? ("+Gr+"."+Yr+") : (window."+Yr+"))":Zr=Zr+Yr,Kr=Wr.shift()}}}function y(Qr,Wr){for(var Gr="";Qr.length>0&&!Wr.test(Qr[0]);)Gr+=Qr.shift();return Gr}function tt(Qr){var Wr;return Qr.length>0&&Ze.test(Qr[0])?(Qr.shift(),Wr=y(Qr,Ke).trim(),Qr.shift()):Wr=y(Qr,x),Wr}var rt="input, textarea, select";function nt(Qr,Wr,Gr){var Jr=[],Zr=Ye(Wr);do{y(Zr,Je);var Kr=Zr.length,Yr=y(Zr,/[,\[\s]/);if(Yr!=="")if(Yr==="every"){var tn={trigger:"every"};y(Zr,Je),tn.pollInterval=d(y(Zr,/[,\[\s]/)),y(Zr,Je);var en=et(Qr,Zr,"event");en&&(tn.eventFilter=en),Jr.push(tn)}else if(Yr.indexOf("sse:")===0)Jr.push({trigger:"sse",sseEvent:Yr.substr(4)});else{var rn={trigger:Yr},en=et(Qr,Zr,"event");for(en&&(rn.eventFilter=en);Zr.length>0&&Zr[0]!==",";){y(Zr,Je);var nn=Zr.shift();if(nn==="changed")rn.changed=!0;else if(nn==="once")rn.once=!0;else if(nn==="consume")rn.consume=!0;else if(nn==="delay"&&Zr[0]===":")Zr.shift(),rn.delay=d(y(Zr,x));else if(nn==="from"&&Zr[0]===":"){if(Zr.shift(),Ze.test(Zr[0]))var on=tt(Zr);else{var on=y(Zr,x);if(on==="closest"||on==="find"||on==="next"||on==="previous"){Zr.shift();var sn=tt(Zr);sn.length>0&&(on+=" "+sn)}}rn.from=on}else nn==="target"&&Zr[0]===":"?(Zr.shift(),rn.target=tt(Zr)):nn==="throttle"&&Zr[0]===":"?(Zr.shift(),rn.throttle=d(y(Zr,x))):nn==="queue"&&Zr[0]===":"?(Zr.shift(),rn.queue=y(Zr,x)):nn==="root"&&Zr[0]===":"?(Zr.shift(),rn[nn]=tt(Zr)):nn==="threshold"&&Zr[0]===":"?(Zr.shift(),rn[nn]=y(Zr,x)):fe(Qr,"htmx:syntax:error",{token:Zr.shift()})}Jr.push(rn)}Zr.length===Kr&&fe(Qr,"htmx:syntax:error",{token:Zr.shift()}),y(Zr,Je)}while(Zr[0]===","&&Zr.shift());return Gr&&(Gr[Wr]=Jr),Jr}function it(Qr){var Wr=te(Qr,"hx-trigger"),Gr=[];if(Wr){var Jr=Q.config.triggerSpecsCache;Gr=Jr&&Jr[Wr]||nt(Qr,Wr,Jr)}return Gr.length>0?Gr:h(Qr,"form")?[{trigger:"submit"}]:h(Qr,'input[type="button"], input[type="submit"]')?[{trigger:"click"}]:h(Qr,rt)?[{trigger:"change"}]:[{trigger:"click"}]}function at(Qr){ae(Qr).cancelled=!0}function ot(Qr,Wr,Gr){var Jr=ae(Qr);Jr.timeout=setTimeout(function(){se(Qr)&&Jr.cancelled!==!0&&(ct(Gr,Qr,Wt("hx:poll:trigger",{triggerSpec:Gr,target:Qr}))||Wr(Qr),ot(Qr,Wr,Gr))},Gr.pollInterval)}function st(Qr){return location.hostname===Qr.hostname&&ee(Qr,"href")&&ee(Qr,"href").indexOf("#")!==0}function lt(Qr,Wr,Gr){if(Qr.tagName==="A"&&st(Qr)&&(Qr.target===""||Qr.target==="_self")||Qr.tagName==="FORM"){Wr.boosted=!0;var Jr,Zr;if(Qr.tagName==="A")Jr="get",Zr=ee(Qr,"href");else{var Kr=ee(Qr,"method");Jr=Kr?Kr.toLowerCase():"get",Zr=ee(Qr,"action")}Gr.forEach(function(Yr){ht(Qr,function(tn,en){if(v(tn,Q.config.disableSelector)){m(tn);return}he(Jr,Zr,tn,en)},Wr,Yr,!0)})}}function ut(Qr,Wr){return!!((Qr.type==="submit"||Qr.type==="click")&&(Wr.tagName==="FORM"||h(Wr,'input[type="submit"], button')&&v(Wr,"form")!==null||Wr.tagName==="A"&&Wr.href&&(Wr.getAttribute("href")==="#"||Wr.getAttribute("href").indexOf("#")!==0)))}function ft(Qr,Wr){return ae(Qr).boosted&&Qr.tagName==="A"&&Wr.type==="click"&&(Wr.ctrlKey||Wr.metaKey)}function ct(Qr,Wr,Gr){var Jr=Qr.eventFilter;if(Jr)try{return Jr.call(Wr,Gr)!==!0}catch(Zr){return fe(re().body,"htmx:eventFilter:error",{error:Zr,source:Jr.source}),!0}return!1}function ht(Qr,Wr,Gr,Jr,Zr){var Kr=ae(Qr),Yr;Jr.from?Yr=Z(Qr,Jr.from):Yr=[Qr],Jr.changed&&Yr.forEach(function(tn){var en=ae(tn);en.lastValue=tn.value}),oe(Yr,function(tn){var en=function(rn){if(!se(Qr)){tn.removeEventListener(Jr.trigger,en);return}if(!ft(Qr,rn)&&((Zr||ut(rn,Qr))&&rn.preventDefault(),!ct(Jr,Qr,rn))){var nn=ae(rn);if(nn.triggerSpec=Jr,nn.handledFor==null&&(nn.handledFor=[]),nn.handledFor.indexOf(Qr)<0){if(nn.handledFor.push(Qr),Jr.consume&&rn.stopPropagation(),Jr.target&&rn.target&&!h(rn.target,Jr.target))return;if(Jr.once){if(Kr.triggeredOnce)return;Kr.triggeredOnce=!0}if(Jr.changed){var on=ae(tn);if(on.lastValue===tn.value)return;on.lastValue=tn.value}if(Kr.delayed&&clearTimeout(Kr.delayed),Kr.throttle)return;Jr.throttle>0?Kr.throttle||(Wr(Qr,rn),Kr.throttle=setTimeout(function(){Kr.throttle=null},Jr.throttle)):Jr.delay>0?Kr.delayed=setTimeout(function(){Wr(Qr,rn)},Jr.delay):(ce(Qr,"htmx:trigger"),Wr(Qr,rn))}}};Gr.listenerInfos==null&&(Gr.listenerInfos=[]),Gr.listenerInfos.push({trigger:Jr.trigger,listener:en,on:tn}),tn.addEventListener(Jr.trigger,en)})}var vt=!1,dt=null;function gt(){dt||(dt=function(){vt=!0},window.addEventListener("scroll",dt),setInterval(function(){vt&&(vt=!1,oe(re().querySelectorAll("[hx-trigger='revealed'],[data-hx-trigger='revealed']"),function(Qr){pt(Qr)}))},200))}function pt(Qr){if(!o(Qr,"data-hx-revealed")&&X(Qr)){Qr.setAttribute("data-hx-revealed","true");var Wr=ae(Qr);Wr.initHash?ce(Qr,"revealed"):Qr.addEventListener("htmx:afterProcessNode",function(Gr){ce(Qr,"revealed")},{once:!0})}}function mt(Qr,Wr,Gr){for(var Jr=D(Gr),Zr=0;Zr<Jr.length;Zr++){var Kr=Jr[Zr].split(/:(.+)/);Kr[0]==="connect"&&xt(Qr,Kr[1],0),Kr[0]==="send"&&bt(Qr)}}function xt(Qr,Wr,Gr){if(se(Qr)){if(Wr.indexOf("/")==0){var Jr=location.hostname+(location.port?":"+location.port:"");location.protocol=="https:"?Wr="wss://"+Jr+Wr:location.protocol=="http:"&&(Wr="ws://"+Jr+Wr)}var Zr=Q.createWebSocket(Wr);Zr.onerror=function(Kr){fe(Qr,"htmx:wsError",{error:Kr,socket:Zr}),yt(Qr)},Zr.onclose=function(Kr){if([1006,1012,1013].indexOf(Kr.code)>=0){var Yr=wt(Gr);setTimeout(function(){xt(Qr,Wr,Gr+1)},Yr)}},Zr.onopen=function(Kr){Gr=0},ae(Qr).webSocket=Zr,Zr.addEventListener("message",function(Kr){if(!yt(Qr)){var Yr=Kr.data;R(Qr,function(sn){Yr=sn.transformResponse(Yr,null,Qr)});for(var tn=T(Qr),en=l(Yr),rn=M(en.children),nn=0;nn<rn.length;nn++){var on=rn[nn];Ee(te(on,"hx-swap-oob")||"true",on,tn)}nr(tn.tasks)}})}}function yt(Qr){if(!se(Qr))return ae(Qr).webSocket.close(),!0}function bt(Qr){var Wr=c(Qr,function(Gr){return ae(Gr).webSocket!=null});Wr?Qr.addEventListener(it(Qr)[0].trigger,function(Gr){var Jr=ae(Wr).webSocket,Zr=xr(Qr,Wr),Kr=dr(Qr,"post"),Yr=Kr.errors,tn=Kr.values,en=Hr(Qr),rn=le(tn,en),nn=yr(rn,Qr);if(nn.HEADERS=Zr,Yr&&Yr.length>0){ce(Qr,"htmx:validation:halted",Yr);return}Jr.send(JSON.stringify(nn)),ut(Gr,Qr)&&Gr.preventDefault()}):fe(Qr,"htmx:noWebSocketSourceError")}function wt(Qr){var Wr=Q.config.wsReconnectDelay;if(typeof Wr=="function")return Wr(Qr);if(Wr==="full-jitter"){var Gr=Math.min(Qr,6),Jr=1e3*Math.pow(2,Gr);return Jr*Math.random()}b('htmx.config.wsReconnectDelay must either be a function or the string "full-jitter"')}function St(Qr,Wr,Gr){for(var Jr=D(Gr),Zr=0;Zr<Jr.length;Zr++){var Kr=Jr[Zr].split(/:(.+)/);Kr[0]==="connect"&&Et(Qr,Kr[1]),Kr[0]==="swap"&&Ct(Qr,Kr[1])}}function Et(Qr,Wr){var Gr=Q.createEventSource(Wr);Gr.onerror=function(Jr){fe(Qr,"htmx:sseError",{error:Jr,source:Gr}),Tt(Qr)},ae(Qr).sseEventSource=Gr}function Ct(Qr,Wr){var Gr=c(Qr,Ot);if(Gr){var Jr=ae(Gr).sseEventSource,Zr=function(Kr){if(!Tt(Gr)){if(!se(Qr)){Jr.removeEventListener(Wr,Zr);return}var Yr=Kr.data;R(Qr,function(nn){Yr=nn.transformResponse(Yr,null,Qr)});var tn=wr(Qr),en=ye(Qr),rn=T(Qr);je(tn.swapStyle,en,Qr,Yr,rn),nr(rn.tasks),ce(Qr,"htmx:sseMessage",Kr)}};ae(Qr).sseListener=Zr,Jr.addEventListener(Wr,Zr)}else fe(Qr,"htmx:noSSESourceError")}function Rt(Qr,Wr,Gr){var Jr=c(Qr,Ot);if(Jr){var Zr=ae(Jr).sseEventSource,Kr=function(){Tt(Jr)||(se(Qr)?Wr(Qr):Zr.removeEventListener(Gr,Kr))};ae(Qr).sseListener=Kr,Zr.addEventListener(Gr,Kr)}else fe(Qr,"htmx:noSSESourceError")}function Tt(Qr){if(!se(Qr))return ae(Qr).sseEventSource.close(),!0}function Ot(Qr){return ae(Qr).sseEventSource!=null}function qt(Qr,Wr,Gr,Jr){var Zr=function(){Gr.loaded||(Gr.loaded=!0,Wr(Qr))};Jr>0?setTimeout(Zr,Jr):Zr()}function Ht(Qr,Wr,Gr){var Jr=!1;return oe(w,function(Zr){if(o(Qr,"hx-"+Zr)){var Kr=te(Qr,"hx-"+Zr);Jr=!0,Wr.path=Kr,Wr.verb=Zr,Gr.forEach(function(Yr){Lt(Qr,Yr,Wr,function(tn,en){if(v(tn,Q.config.disableSelector)){m(tn);return}he(Zr,Kr,tn,en)})})}}),Jr}function Lt(Qr,Wr,Gr,Jr){if(Wr.sseEvent)Rt(Qr,Jr,Wr.sseEvent);else if(Wr.trigger==="revealed")gt(),ht(Qr,Jr,Gr,Wr),pt(Qr);else if(Wr.trigger==="intersect"){var Zr={};Wr.root&&(Zr.root=ue(Qr,Wr.root)),Wr.threshold&&(Zr.threshold=parseFloat(Wr.threshold));var Kr=new IntersectionObserver(function(Yr){for(var tn=0;tn<Yr.length;tn++){var en=Yr[tn];if(en.isIntersecting){ce(Qr,"intersect");break}}},Zr);Kr.observe(Qr),ht(Qr,Jr,Gr,Wr)}else Wr.trigger==="load"?ct(Wr,Qr,Wt("load",{elt:Qr}))||qt(Qr,Jr,Gr,Wr.delay):Wr.pollInterval>0?(Gr.polling=!0,ot(Qr,Jr,Wr)):ht(Qr,Jr,Gr,Wr)}function At(Qr){if(!Qr.htmxExecuted&&Q.config.allowScriptTags&&(Qr.type==="text/javascript"||Qr.type==="module"||Qr.type==="")){var Wr=re().createElement("script");oe(Qr.attributes,function(Jr){Wr.setAttribute(Jr.name,Jr.value)}),Wr.textContent=Qr.textContent,Wr.async=!1,Q.config.inlineScriptNonce&&(Wr.nonce=Q.config.inlineScriptNonce);var Gr=Qr.parentElement;try{Gr.insertBefore(Wr,Qr)}catch(Jr){b(Jr)}finally{Qr.parentElement&&Qr.parentElement.removeChild(Qr)}}}function Nt(Qr){h(Qr,"script")&&At(Qr),oe(f(Qr,"script"),function(Wr){At(Wr)})}function It(Qr){var Wr=Qr.attributes;if(!Wr)return!1;for(var Gr=0;Gr<Wr.length;Gr++){var Jr=Wr[Gr].name;if(g(Jr,"hx-on:")||g(Jr,"data-hx-on:")||g(Jr,"hx-on-")||g(Jr,"data-hx-on-"))return!0}return!1}function kt(Qr){var Wr=null,Gr=[];if(It(Qr)&&Gr.push(Qr),document.evaluate)for(var Jr=document.evaluate('.//*[@*[ starts-with(name(), "hx-on:") or starts-with(name(), "data-hx-on:") or starts-with(name(), "hx-on-") or starts-with(name(), "data-hx-on-") ]]',Qr);Wr=Jr.iterateNext();)Gr.push(Wr);else if(typeof Qr.getElementsByTagName=="function")for(var Zr=Qr.getElementsByTagName("*"),Kr=0;Kr<Zr.length;Kr++)It(Zr[Kr])&&Gr.push(Zr[Kr]);return Gr}function Pt(Qr){if(Qr.querySelectorAll){var Wr=", [hx-boost] a, [data-hx-boost] a, a[hx-boost], a[data-hx-boost]",Gr=Qr.querySelectorAll(i+Wr+", form, [type='submit'], [hx-sse], [data-hx-sse], [hx-ws], [data-hx-ws], [hx-ext], [data-hx-ext], [hx-trigger], [data-hx-trigger], [hx-on], [data-hx-on]");return Gr}else return[]}function Mt(Qr){var Wr=v(Qr.target,"button, input[type='submit']"),Gr=Dt(Qr);Gr&&(Gr.lastButtonClicked=Wr)}function Xt(Qr){var Wr=Dt(Qr);Wr&&(Wr.lastButtonClicked=null)}function Dt(Qr){var Wr=v(Qr.target,"button, input[type='submit']");if(Wr){var Gr=p("#"+ee(Wr,"form"))||v(Wr,"form");if(Gr)return ae(Gr)}}function Ut(Qr){Qr.addEventListener("click",Mt),Qr.addEventListener("focusin",Mt),Qr.addEventListener("focusout",Xt)}function Bt(Qr){for(var Wr=Ye(Qr),Gr=0,Jr=0;Jr<Wr.length;Jr++){let Zr=Wr[Jr];Zr==="{"?Gr++:Zr==="}"&&Gr--}return Gr}function Ft(Qr,Wr,Gr){var Jr=ae(Qr);Array.isArray(Jr.onHandlers)||(Jr.onHandlers=[]);var Zr,Kr=function(Yr){return Tr(Qr,function(){Zr||(Zr=new Function("event",Gr)),Zr.call(Qr,Yr)})};Qr.addEventListener(Wr,Kr),Jr.onHandlers.push({event:Wr,listener:Kr})}function Vt(Qr){var Wr=te(Qr,"hx-on");if(Wr){for(var Gr={},Jr=Wr.split(`
+`),Zr=null,Kr=0;Jr.length>0;){var Yr=Jr.shift(),tn=Yr.match(/^\s*([a-zA-Z:\-\.]+:)(.*)/);Kr===0&&tn?(Yr.split(":"),Zr=tn[1].slice(0,-1),Gr[Zr]=tn[2]):Gr[Zr]+=Yr,Kr+=Bt(Yr)}for(var en in Gr)Ft(Qr,en,Gr[en])}}function jt(Qr){Ae(Qr);for(var Wr=0;Wr<Qr.attributes.length;Wr++){var Gr=Qr.attributes[Wr].name,Jr=Qr.attributes[Wr].value;if(g(Gr,"hx-on")||g(Gr,"data-hx-on")){var Zr=Gr.indexOf("-on")+3,Kr=Gr.slice(Zr,Zr+1);if(Kr==="-"||Kr===":"){var Yr=Gr.slice(Zr+1);g(Yr,":")?Yr="htmx"+Yr:g(Yr,"-")?Yr="htmx:"+Yr.slice(1):g(Yr,"htmx-")&&(Yr="htmx:"+Yr.slice(5)),Ft(Qr,Yr,Jr)}}}}function _t(Qr){if(v(Qr,Q.config.disableSelector)){m(Qr);return}var Wr=ae(Qr);if(Wr.initHash!==Le(Qr)){Ne(Qr),Wr.initHash=Le(Qr),Vt(Qr),ce(Qr,"htmx:beforeProcessNode"),Qr.value&&(Wr.lastValue=Qr.value);var Gr=it(Qr),Jr=Ht(Qr,Wr,Gr);Jr||(ne(Qr,"hx-boost")==="true"?lt(Qr,Wr,Gr):o(Qr,"hx-trigger")&&Gr.forEach(function(Yr){Lt(Qr,Yr,Wr,function(){})})),(Qr.tagName==="FORM"||ee(Qr,"type")==="submit"&&o(Qr,"form"))&&Ut(Qr);var Zr=te(Qr,"hx-sse");Zr&&St(Qr,Wr,Zr);var Kr=te(Qr,"hx-ws");Kr&&mt(Qr,Wr,Kr),ce(Qr,"htmx:afterProcessNode")}}function zt(Qr){if(Qr=p(Qr),v(Qr,Q.config.disableSelector)){m(Qr);return}_t(Qr),oe(Pt(Qr),function(Wr){_t(Wr)}),oe(kt(Qr),jt)}function $t(Qr){return Qr.replace(/([a-z0-9])([A-Z])/g,"$1-$2").toLowerCase()}function Wt(Qr,Wr){var Gr;return window.CustomEvent&&typeof window.CustomEvent=="function"?Gr=new CustomEvent(Qr,{bubbles:!0,cancelable:!0,detail:Wr}):(Gr=re().createEvent("CustomEvent"),Gr.initCustomEvent(Qr,!0,!0,Wr)),Gr}function fe(Qr,Wr,Gr){ce(Qr,Wr,le({error:Wr},Gr))}function Gt(Qr){return Qr==="htmx:afterProcessNode"}function R(Qr,Wr){oe(Fr(Qr),function(Gr){try{Wr(Gr)}catch(Jr){b(Jr)}})}function b(Qr){console.error?console.error(Qr):console.log&&console.log("ERROR: ",Qr)}function ce(Qr,Wr,Gr){Qr=p(Qr),Gr==null&&(Gr={}),Gr.elt=Qr;var Jr=Wt(Wr,Gr);Q.logger&&!Gt(Wr)&&Q.logger(Qr,Wr,Gr),Gr.error&&(b(Gr.error),ce(Qr,"htmx:error",{errorInfo:Gr}));var Zr=Qr.dispatchEvent(Jr),Kr=$t(Wr);if(Zr&&Kr!==Wr){var Yr=Wt(Kr,Jr.detail);Zr=Zr&&Qr.dispatchEvent(Yr)}return R(Qr,function(tn){Zr=Zr&&tn.onEvent(Wr,Jr)!==!1&&!Jr.defaultPrevented}),Zr}var Jt=location.pathname+location.search;function Zt(){var Qr=re().querySelector("[hx-history-elt],[data-hx-history-elt]");return Qr||re().body}function Kt(Qr,Wr,Gr,Jr){if(U()){if(Q.config.historyCacheSize<=0){localStorage.removeItem("htmx-history-cache");return}Qr=B(Qr);for(var Zr=E(localStorage.getItem("htmx-history-cache"))||[],Kr=0;Kr<Zr.length;Kr++)if(Zr[Kr].url===Qr){Zr.splice(Kr,1);break}var Yr={url:Qr,content:Wr,title:Gr,scroll:Jr};for(ce(re().body,"htmx:historyItemCreated",{item:Yr,cache:Zr}),Zr.push(Yr);Zr.length>Q.config.historyCacheSize;)Zr.shift();for(;Zr.length>0;)try{localStorage.setItem("htmx-history-cache",JSON.stringify(Zr));break}catch(tn){fe(re().body,"htmx:historyCacheError",{cause:tn,cache:Zr}),Zr.shift()}}}function Yt(Qr){if(!U())return null;Qr=B(Qr);for(var Wr=E(localStorage.getItem("htmx-history-cache"))||[],Gr=0;Gr<Wr.length;Gr++)if(Wr[Gr].url===Qr)return Wr[Gr];return null}function Qt(Qr){var Wr=Q.config.requestClass,Gr=Qr.cloneNode(!0);return oe(f(Gr,"."+Wr),function(Jr){n(Jr,Wr)}),Gr.innerHTML}function er(){var Qr=Zt(),Wr=Jt||location.pathname+location.search,Gr;try{Gr=re().querySelector('[hx-history="false" i],[data-hx-history="false" i]')}catch{Gr=re().querySelector('[hx-history="false"],[data-hx-history="false"]')}Gr||(ce(re().body,"htmx:beforeHistorySave",{path:Wr,historyElt:Qr}),Kt(Wr,Qt(Qr),re().title,window.scrollY)),Q.config.historyEnabled&&history.replaceState({htmx:!0},re().title,window.location.href)}function tr(Qr){Q.config.getCacheBusterParam&&(Qr=Qr.replace(/org\.htmx\.cache-buster=[^&]*&?/,""),(G(Qr,"&")||G(Qr,"?"))&&(Qr=Qr.slice(0,-1))),Q.config.historyEnabled&&history.pushState({htmx:!0},"",Qr),Jt=Qr}function rr(Qr){Q.config.historyEnabled&&history.replaceState({htmx:!0},"",Qr),Jt=Qr}function nr(Qr){oe(Qr,function(Wr){Wr.call()})}function ir(Qr){var Wr=new XMLHttpRequest,Gr={path:Qr,xhr:Wr};ce(re().body,"htmx:historyCacheMiss",Gr),Wr.open("GET",Qr,!0),Wr.setRequestHeader("HX-Request","true"),Wr.setRequestHeader("HX-History-Restore-Request","true"),Wr.setRequestHeader("HX-Current-URL",re().location.href),Wr.onload=function(){if(this.status>=200&&this.status<400){ce(re().body,"htmx:historyCacheMissLoad",Gr);var Jr=l(this.response);Jr=Jr.querySelector("[hx-history-elt],[data-hx-history-elt]")||Jr;var Zr=Zt(),Kr=T(Zr),Yr=Ve(this.response);if(Yr){var tn=C("title");tn?tn.innerHTML=Yr:window.document.title=Yr}Ue(Zr,Jr,Kr),nr(Kr.tasks),Jt=Qr,ce(re().body,"htmx:historyRestore",{path:Qr,cacheMiss:!0,serverResponse:this.response})}else fe(re().body,"htmx:historyCacheMissLoadError",Gr)},Wr.send()}function ar(Qr){er(),Qr=Qr||location.pathname+location.search;var Wr=Yt(Qr);if(Wr){var Gr=l(Wr.content),Jr=Zt(),Zr=T(Jr);Ue(Jr,Gr,Zr),nr(Zr.tasks),document.title=Wr.title,setTimeout(function(){window.scrollTo(0,Wr.scroll)},0),Jt=Qr,ce(re().body,"htmx:historyRestore",{path:Qr,item:Wr})}else Q.config.refreshOnHistoryMiss?window.location.reload(!0):ir(Qr)}function or(Qr){var Wr=me(Qr,"hx-indicator");return Wr==null&&(Wr=[Qr]),oe(Wr,function(Gr){var Jr=ae(Gr);Jr.requestCount=(Jr.requestCount||0)+1,Gr.classList.add.call(Gr.classList,Q.config.requestClass)}),Wr}function sr(Qr){var Wr=me(Qr,"hx-disabled-elt");return Wr==null&&(Wr=[]),oe(Wr,function(Gr){var Jr=ae(Gr);Jr.requestCount=(Jr.requestCount||0)+1,Gr.setAttribute("disabled","")}),Wr}function lr(Qr,Wr){oe(Qr,function(Gr){var Jr=ae(Gr);Jr.requestCount=(Jr.requestCount||0)-1,Jr.requestCount===0&&Gr.classList.remove.call(Gr.classList,Q.config.requestClass)}),oe(Wr,function(Gr){var Jr=ae(Gr);Jr.requestCount=(Jr.requestCount||0)-1,Jr.requestCount===0&&Gr.removeAttribute("disabled")})}function ur(Qr,Wr){for(var Gr=0;Gr<Qr.length;Gr++){var Jr=Qr[Gr];if(Jr.isSameNode(Wr))return!0}return!1}function fr(Qr){return Qr.name===""||Qr.name==null||Qr.disabled||v(Qr,"fieldset[disabled]")||Qr.type==="button"||Qr.type==="submit"||Qr.tagName==="image"||Qr.tagName==="reset"||Qr.tagName==="file"?!1:Qr.type==="checkbox"||Qr.type==="radio"?Qr.checked:!0}function cr(Qr,Wr,Gr){if(Qr!=null&&Wr!=null){var Jr=Gr[Qr];Jr===void 0?Gr[Qr]=Wr:Array.isArray(Jr)?Array.isArray(Wr)?Gr[Qr]=Jr.concat(Wr):Jr.push(Wr):Array.isArray(Wr)?Gr[Qr]=[Jr].concat(Wr):Gr[Qr]=[Jr,Wr]}}function hr(Qr,Wr,Gr,Jr,Zr){if(!(Jr==null||ur(Qr,Jr))){if(Qr.push(Jr),fr(Jr)){var Kr=ee(Jr,"name"),Yr=Jr.value;Jr.multiple&&Jr.tagName==="SELECT"&&(Yr=M(Jr.querySelectorAll("option:checked")).map(function(en){return en.value})),Jr.files&&(Yr=M(Jr.files)),cr(Kr,Yr,Wr),Zr&&vr(Jr,Gr)}if(h(Jr,"form")){var tn=Jr.elements;oe(tn,function(en){hr(Qr,Wr,Gr,en,Zr)})}}}function vr(Qr,Wr){Qr.willValidate&&(ce(Qr,"htmx:validation:validate"),Qr.checkValidity()||(Wr.push({elt:Qr,message:Qr.validationMessage,validity:Qr.validity}),ce(Qr,"htmx:validation:failed",{message:Qr.validationMessage,validity:Qr.validity})))}function dr(Qr,Wr){var Gr=[],Jr={},Zr={},Kr=[],Yr=ae(Qr);Yr.lastButtonClicked&&!se(Yr.lastButtonClicked)&&(Yr.lastButtonClicked=null);var tn=h(Qr,"form")&&Qr.noValidate!==!0||te(Qr,"hx-validate")==="true";if(Yr.lastButtonClicked&&(tn=tn&&Yr.lastButtonClicked.formNoValidate!==!0),Wr!=="get"&&hr(Gr,Zr,Kr,v(Qr,"form"),tn),hr(Gr,Jr,Kr,Qr,tn),Yr.lastButtonClicked||Qr.tagName==="BUTTON"||Qr.tagName==="INPUT"&&ee(Qr,"type")==="submit"){var en=Yr.lastButtonClicked||Qr,rn=ee(en,"name");cr(rn,en.value,Zr)}var nn=me(Qr,"hx-include");return oe(nn,function(on){hr(Gr,Jr,Kr,on,tn),h(on,"form")||oe(on.querySelectorAll(rt),function(sn){hr(Gr,Jr,Kr,sn,tn)})}),Jr=le(Jr,Zr),{errors:Kr,values:Jr}}function gr(Qr,Wr,Gr){Qr!==""&&(Qr+="&"),String(Gr)==="[object Object]"&&(Gr=JSON.stringify(Gr));var Jr=encodeURIComponent(Gr);return Qr+=encodeURIComponent(Wr)+"="+Jr,Qr}function pr(Qr){var Wr="";for(var Gr in Qr)if(Qr.hasOwnProperty(Gr)){var Jr=Qr[Gr];Array.isArray(Jr)?oe(Jr,function(Zr){Wr=gr(Wr,Gr,Zr)}):Wr=gr(Wr,Gr,Jr)}return Wr}function mr(Qr){var Wr=new FormData;for(var Gr in Qr)if(Qr.hasOwnProperty(Gr)){var Jr=Qr[Gr];Array.isArray(Jr)?oe(Jr,function(Zr){Wr.append(Gr,Zr)}):Wr.append(Gr,Jr)}return Wr}function xr(Qr,Wr,Gr){var Jr={"HX-Request":"true","HX-Trigger":ee(Qr,"id"),"HX-Trigger-Name":ee(Qr,"name"),"HX-Target":te(Wr,"id"),"HX-Current-URL":re().location.href};return Rr(Qr,"hx-headers",!1,Jr),Gr!==void 0&&(Jr["HX-Prompt"]=Gr),ae(Qr).boosted&&(Jr["HX-Boosted"]="true"),Jr}function yr(Qr,Wr){var Gr=ne(Wr,"hx-params");if(Gr){if(Gr==="none")return{};if(Gr==="*")return Qr;if(Gr.indexOf("not ")===0)return oe(Gr.substr(4).split(","),function(Zr){Zr=Zr.trim(),delete Qr[Zr]}),Qr;var Jr={};return oe(Gr.split(","),function(Zr){Zr=Zr.trim(),Jr[Zr]=Qr[Zr]}),Jr}else return Qr}function br(Qr){return ee(Qr,"href")&&ee(Qr,"href").indexOf("#")>=0}function wr(Qr,Wr){var Gr=Wr||ne(Qr,"hx-swap"),Jr={swapStyle:ae(Qr).boosted?"innerHTML":Q.config.defaultSwapStyle,swapDelay:Q.config.defaultSwapDelay,settleDelay:Q.config.defaultSettleDelay};if(Q.config.scrollIntoViewOnBoost&&ae(Qr).boosted&&!br(Qr)&&(Jr.show="top"),Gr){var Zr=D(Gr);if(Zr.length>0)for(var Kr=0;Kr<Zr.length;Kr++){var Yr=Zr[Kr];if(Yr.indexOf("swap:")===0)Jr.swapDelay=d(Yr.substr(5));else if(Yr.indexOf("settle:")===0)Jr.settleDelay=d(Yr.substr(7));else if(Yr.indexOf("transition:")===0)Jr.transition=Yr.substr(11)==="true";else if(Yr.indexOf("ignoreTitle:")===0)Jr.ignoreTitle=Yr.substr(12)==="true";else if(Yr.indexOf("scroll:")===0){var tn=Yr.substr(7),en=tn.split(":"),rn=en.pop(),nn=en.length>0?en.join(":"):null;Jr.scroll=rn,Jr.scrollTarget=nn}else if(Yr.indexOf("show:")===0){var on=Yr.substr(5),en=on.split(":"),sn=en.pop(),nn=en.length>0?en.join(":"):null;Jr.show=sn,Jr.showTarget=nn}else if(Yr.indexOf("focus-scroll:")===0){var cn=Yr.substr(13);Jr.focusScroll=cn=="true"}else Kr==0?Jr.swapStyle=Yr:b("Unknown modifier in hx-swap: "+Yr)}}return Jr}function Sr(Qr){return ne(Qr,"hx-encoding")==="multipart/form-data"||h(Qr,"form")&&ee(Qr,"enctype")==="multipart/form-data"}function Er(Qr,Wr,Gr){var Jr=null;return R(Wr,function(Zr){Jr==null&&(Jr=Zr.encodeParameters(Qr,Gr,Wr))}),Jr??(Sr(Wr)?mr(Gr):pr(Gr))}function T(Qr){return{tasks:[],elts:[Qr]}}function Cr(Qr,Wr){var Gr=Qr[0],Jr=Qr[Qr.length-1];if(Wr.scroll){var Zr=null;Wr.scrollTarget&&(Zr=ue(Gr,Wr.scrollTarget)),Wr.scroll==="top"&&(Gr||Zr)&&(Zr=Zr||Gr,Zr.scrollTop=0),Wr.scroll==="bottom"&&(Jr||Zr)&&(Zr=Zr||Jr,Zr.scrollTop=Zr.scrollHeight)}if(Wr.show){var Zr=null;if(Wr.showTarget){var Kr=Wr.showTarget;Wr.showTarget==="window"&&(Kr="body"),Zr=ue(Gr,Kr)}Wr.show==="top"&&(Gr||Zr)&&(Zr=Zr||Gr,Zr.scrollIntoView({block:"start",behavior:Q.config.scrollBehavior})),Wr.show==="bottom"&&(Jr||Zr)&&(Zr=Zr||Jr,Zr.scrollIntoView({block:"end",behavior:Q.config.scrollBehavior}))}}function Rr(Qr,Wr,Gr,Jr){if(Jr==null&&(Jr={}),Qr==null)return Jr;var Zr=te(Qr,Wr);if(Zr){var Kr=Zr.trim(),Yr=Gr;if(Kr==="unset")return null;Kr.indexOf("javascript:")===0?(Kr=Kr.substr(11),Yr=!0):Kr.indexOf("js:")===0&&(Kr=Kr.substr(3),Yr=!0),Kr.indexOf("{")!==0&&(Kr="{"+Kr+"}");var tn;Yr?tn=Tr(Qr,function(){return Function("return ("+Kr+")")()},{}):tn=E(Kr);for(var en in tn)tn.hasOwnProperty(en)&&Jr[en]==null&&(Jr[en]=tn[en])}return Rr(u(Qr),Wr,Gr,Jr)}function Tr(Qr,Wr,Gr){return Q.config.allowEval?Wr():(fe(Qr,"htmx:evalDisallowedError"),Gr)}function Or(Qr,Wr){return Rr(Qr,"hx-vars",!0,Wr)}function qr(Qr,Wr){return Rr(Qr,"hx-vals",!1,Wr)}function Hr(Qr){return le(Or(Qr),qr(Qr))}function Lr(Qr,Wr,Gr){if(Gr!==null)try{Qr.setRequestHeader(Wr,Gr)}catch{Qr.setRequestHeader(Wr,encodeURIComponent(Gr)),Qr.setRequestHeader(Wr+"-URI-AutoEncoded","true")}}function Ar(Qr){if(Qr.responseURL&&typeof URL<"u")try{var Wr=new URL(Qr.responseURL);return Wr.pathname+Wr.search}catch{fe(re().body,"htmx:badResponseUrl",{url:Qr.responseURL})}}function O(Qr,Wr){return Wr.test(Qr.getAllResponseHeaders())}function Nr(Qr,Wr,Gr){return Qr=Qr.toLowerCase(),Gr?Gr instanceof Element||I(Gr,"String")?he(Qr,Wr,null,null,{targetOverride:p(Gr),returnPromise:!0}):he(Qr,Wr,p(Gr.source),Gr.event,{handler:Gr.handler,headers:Gr.headers,values:Gr.values,targetOverride:p(Gr.target),swapOverride:Gr.swap,select:Gr.select,returnPromise:!0}):he(Qr,Wr,null,null,{returnPromise:!0})}function Ir(Qr){for(var Wr=[];Qr;)Wr.push(Qr),Qr=Qr.parentElement;return Wr}function kr(Qr,Wr,Gr){var Jr,Zr;if(typeof URL=="function"){Zr=new URL(Wr,document.location.href);var Kr=document.location.origin;Jr=Kr===Zr.origin}else Zr=Wr,Jr=g(Wr,document.location.origin);return Q.config.selfRequestsOnly&&!Jr?!1:ce(Qr,"htmx:validateUrl",le({url:Zr,sameHost:Jr},Gr))}function he(Qr,Wr,Gr,Jr,Zr,Kr){var Yr=null,tn=null;if(Zr=Zr??{},Zr.returnPromise&&typeof Promise<"u")var en=new Promise(function(bn,Sn){Yr=bn,tn=Sn});Gr==null&&(Gr=re().body);var rn=Zr.handler||Mr,nn=Zr.select||null;if(!se(Gr))return ie(Yr),en;var on=Zr.targetOverride||ye(Gr);if(on==null||on==pe)return fe(Gr,"htmx:targetError",{target:te(Gr,"hx-target")}),ie(tn),en;var sn=ae(Gr),cn=sn.lastButtonClicked;if(cn){var yn=ee(cn,"formaction");yn!=null&&(Wr=yn);var hn=ee(cn,"formmethod");hn!=null&&hn.toLowerCase()!=="dialog"&&(Qr=hn)}var Ln=ne(Gr,"hx-confirm");if(Kr===void 0){var Mn=function(bn){return he(Qr,Wr,Gr,Jr,Zr,!!bn)},Qn={target:on,elt:Gr,path:Wr,verb:Qr,triggeringEvent:Jr,etc:Zr,issueRequest:Mn,question:Ln};if(ce(Gr,"htmx:confirm",Qn)===!1)return ie(Yr),en}var xn=Gr,gn=ne(Gr,"hx-sync"),wn=null,Un=!1;if(gn){var ro=gn.split(":"),pn=ro[0].trim();if(pn==="this"?xn=xe(Gr,"hx-sync"):xn=ue(Gr,pn),gn=(ro[1]||"drop").trim(),sn=ae(xn),gn==="drop"&&sn.xhr&&sn.abortable!==!0)return ie(Yr),en;if(gn==="abort"){if(sn.xhr)return ie(Yr),en;Un=!0}else if(gn==="replace")ce(xn,"htmx:abort");else if(gn.indexOf("queue")===0){var mn=gn.split(" ");wn=(mn[1]||"last").trim()}}if(sn.xhr)if(sn.abortable)ce(xn,"htmx:abort");else{if(wn==null){if(Jr){var Tn=ae(Jr);Tn&&Tn.triggerSpec&&Tn.triggerSpec.queue&&(wn=Tn.triggerSpec.queue)}wn==null&&(wn="last")}return sn.queuedRequests==null&&(sn.queuedRequests=[]),wn==="first"&&sn.queuedRequests.length===0?sn.queuedRequests.push(function(){he(Qr,Wr,Gr,Jr,Zr)}):wn==="all"?sn.queuedRequests.push(function(){he(Qr,Wr,Gr,Jr,Zr)}):wn==="last"&&(sn.queuedRequests=[],sn.queuedRequests.push(function(){he(Qr,Wr,Gr,Jr,Zr)})),ie(Yr),en}var an=new XMLHttpRequest;sn.xhr=an,sn.abortable=Un;var un=function(){if(sn.xhr=null,sn.abortable=!1,sn.queuedRequests!=null&&sn.queuedRequests.length>0){var bn=sn.queuedRequests.shift();bn()}},Xn=ne(Gr,"hx-prompt");if(Xn){var Nn=prompt(Xn);if(Nn===null||!ce(Gr,"htmx:prompt",{prompt:Nn,target:on}))return ie(Yr),un(),en}if(Ln&&!Kr&&!confirm(Ln))return ie(Yr),un(),en;var vn=xr(Gr,on,Nn);Qr!=="get"&&!Sr(Gr)&&(vn["Content-Type"]="application/x-www-form-urlencoded"),Zr.headers&&(vn=le(vn,Zr.headers));var fn=dr(Gr,Qr),In=fn.errors,$n=fn.values;Zr.values&&($n=le($n,Zr.values));var An=Hr(Gr),no=le($n,An),jn=yr(no,Gr);Q.config.getCacheBusterParam&&Qr==="get"&&(jn["org.htmx.cache-buster"]=ee(on,"id")||"true"),(Wr==null||Wr==="")&&(Wr=re().location.href);var Jn=Rr(Gr,"hx-request"),oo=ae(Gr).boosted,zn=Q.config.methodsThatUseUrlParams.indexOf(Qr)>=0,dn={boosted:oo,useUrlParams:zn,parameters:jn,unfilteredParameters:no,headers:vn,target:on,verb:Qr,errors:In,withCredentials:Zr.credentials||Jn.credentials||Q.config.withCredentials,timeout:Zr.timeout||Jn.timeout||Q.config.timeout,path:Wr,triggeringEvent:Jr};if(!ce(Gr,"htmx:configRequest",dn))return ie(Yr),un(),en;if(Wr=dn.path,Qr=dn.verb,vn=dn.headers,jn=dn.parameters,In=dn.errors,zn=dn.useUrlParams,In&&In.length>0)return ce(Gr,"htmx:validation:halted",dn),ie(Yr),un(),en;var io=Wr.split("#"),vo=io[0],Vn=io[1],En=Wr;if(zn){En=vo;var bo=Object.keys(jn).length!==0;bo&&(En.indexOf("?")<0?En+="?":En+="&",En+=pr(jn),Vn&&(En+="#"+Vn))}if(!kr(Gr,En,dn))return fe(Gr,"htmx:invalidPath",dn),ie(tn),en;if(an.open(Qr.toUpperCase(),En,!0),an.overrideMimeType("text/html"),an.withCredentials=dn.withCredentials,an.timeout=dn.timeout,!Jn.noHeaders){for(var Zn in vn)if(vn.hasOwnProperty(Zn)){var yo=vn[Zn];Lr(an,Zn,yo)}}var ln={xhr:an,target:on,requestConfig:dn,etc:Zr,boosted:oo,select:nn,pathInfo:{requestPath:Wr,finalRequestPath:En,anchor:Vn}};if(an.onload=function(){try{var bn=Ir(Gr);if(ln.pathInfo.responsePath=Ar(an),rn(Gr,ln),lr(Wn,Gn),ce(Gr,"htmx:afterRequest",ln),ce(Gr,"htmx:afterOnLoad",ln),!se(Gr)){for(var Sn=null;bn.length>0&&Sn==null;){var _n=bn.shift();se(_n)&&(Sn=_n)}Sn&&(ce(Sn,"htmx:afterRequest",ln),ce(Sn,"htmx:afterOnLoad",ln))}ie(Yr),un()}catch(so){throw fe(Gr,"htmx:onLoadError",le({error:so},ln)),so}},an.onerror=function(){lr(Wn,Gn),fe(Gr,"htmx:afterRequest",ln),fe(Gr,"htmx:sendError",ln),ie(tn),un()},an.onabort=function(){lr(Wn,Gn),fe(Gr,"htmx:afterRequest",ln),fe(Gr,"htmx:sendAbort",ln),ie(tn),un()},an.ontimeout=function(){lr(Wn,Gn),fe(Gr,"htmx:afterRequest",ln),fe(Gr,"htmx:timeout",ln),ie(tn),un()},!ce(Gr,"htmx:beforeRequest",ln))return ie(Yr),un(),en;var Wn=or(Gr),Gn=sr(Gr);oe(["loadstart","loadend","progress","abort"],function(bn){oe([an,an.upload],function(Sn){Sn.addEventListener(bn,function(_n){ce(Gr,"htmx:xhr:"+bn,{lengthComputable:_n.lengthComputable,loaded:_n.loaded,total:_n.total})})})}),ce(Gr,"htmx:beforeSend",ln);var xo=zn?null:Er(an,Gr,jn);return an.send(xo),en}function Pr(Qr,Wr){var Gr=Wr.xhr,Jr=null,Zr=null;if(O(Gr,/HX-Push:/i)?(Jr=Gr.getResponseHeader("HX-Push"),Zr="push"):O(Gr,/HX-Push-Url:/i)?(Jr=Gr.getResponseHeader("HX-Push-Url"),Zr="push"):O(Gr,/HX-Replace-Url:/i)&&(Jr=Gr.getResponseHeader("HX-Replace-Url"),Zr="replace"),Jr)return Jr==="false"?{}:{type:Zr,path:Jr};var Kr=Wr.pathInfo.finalRequestPath,Yr=Wr.pathInfo.responsePath,tn=ne(Qr,"hx-push-url"),en=ne(Qr,"hx-replace-url"),rn=ae(Qr).boosted,nn=null,on=null;return tn?(nn="push",on=tn):en?(nn="replace",on=en):rn&&(nn="push",on=Yr||Kr),on?on==="false"?{}:(on==="true"&&(on=Yr||Kr),Wr.pathInfo.anchor&&on.indexOf("#")===-1&&(on=on+"#"+Wr.pathInfo.anchor),{type:nn,path:on}):{}}function Mr(Qr,Wr){var Gr=Wr.xhr,Jr=Wr.target,Zr=Wr.etc,Kr=Wr.requestConfig,Yr=Wr.select;if(ce(Qr,"htmx:beforeOnLoad",Wr)){if(O(Gr,/HX-Trigger:/i)&&_e(Gr,"HX-Trigger",Qr),O(Gr,/HX-Location:/i)){er();var tn=Gr.getResponseHeader("HX-Location"),en;tn.indexOf("{")===0&&(en=E(tn),tn=en.path,delete en.path),Nr("GET",tn,en).then(function(){tr(tn)});return}var rn=O(Gr,/HX-Refresh:/i)&&Gr.getResponseHeader("HX-Refresh")==="true";if(O(Gr,/HX-Redirect:/i)){location.href=Gr.getResponseHeader("HX-Redirect"),rn&&location.reload();return}if(rn){location.reload();return}O(Gr,/HX-Retarget:/i)&&(Gr.getResponseHeader("HX-Retarget")==="this"?Wr.target=Qr:Wr.target=ue(Qr,Gr.getResponseHeader("HX-Retarget")));var nn=Pr(Qr,Wr),on=Gr.status>=200&&Gr.status<400&&Gr.status!==204,sn=Gr.response,cn=Gr.status>=400,yn=Q.config.ignoreTitle,hn=le({shouldSwap:on,serverResponse:sn,isError:cn,ignoreTitle:yn},Wr);if(ce(Jr,"htmx:beforeSwap",hn)){if(Jr=hn.target,sn=hn.serverResponse,cn=hn.isError,yn=hn.ignoreTitle,Wr.target=Jr,Wr.failed=cn,Wr.successful=!cn,hn.shouldSwap){Gr.status===286&&at(Qr),R(Qr,function(pn){sn=pn.transformResponse(sn,Gr,Qr)}),nn.type&&er();var Ln=Zr.swapOverride;O(Gr,/HX-Reswap:/i)&&(Ln=Gr.getResponseHeader("HX-Reswap"));var en=wr(Qr,Ln);en.hasOwnProperty("ignoreTitle")&&(yn=en.ignoreTitle),Jr.classList.add(Q.config.swappingClass);var Mn=null,Qn=null,xn=function(){try{var pn=document.activeElement,mn={};try{mn={elt:pn,start:pn?pn.selectionStart:null,end:pn?pn.selectionEnd:null}}catch{}var Tn;Yr&&(Tn=Yr),O(Gr,/HX-Reselect:/i)&&(Tn=Gr.getResponseHeader("HX-Reselect")),nn.type&&(ce(re().body,"htmx:beforeHistoryUpdate",le({history:nn},Wr)),nn.type==="push"?(tr(nn.path),ce(re().body,"htmx:pushedIntoHistory",{path:nn.path})):(rr(nn.path),ce(re().body,"htmx:replacedInHistory",{path:nn.path})));var an=T(Jr);if(je(en.swapStyle,Jr,Qr,sn,an,Tn),mn.elt&&!se(mn.elt)&&ee(mn.elt,"id")){var un=document.getElementById(ee(mn.elt,"id")),Xn={preventScroll:en.focusScroll!==void 0?!en.focusScroll:!Q.config.defaultFocusScroll};if(un){if(mn.start&&un.setSelectionRange)try{un.setSelectionRange(mn.start,mn.end)}catch{}un.focus(Xn)}}if(Jr.classList.remove(Q.config.swappingClass),oe(an.elts,function(fn){fn.classList&&fn.classList.add(Q.config.settlingClass),ce(fn,"htmx:afterSwap",Wr)}),O(Gr,/HX-Trigger-After-Swap:/i)){var Nn=Qr;se(Qr)||(Nn=re().body),_e(Gr,"HX-Trigger-After-Swap",Nn)}var vn=function(){if(oe(an.tasks,function(An){An.call()}),oe(an.elts,function(An){An.classList&&An.classList.remove(Q.config.settlingClass),ce(An,"htmx:afterSettle",Wr)}),Wr.pathInfo.anchor){var fn=re().getElementById(Wr.pathInfo.anchor);fn&&fn.scrollIntoView({block:"start",behavior:"auto"})}if(an.title&&!yn){var In=C("title");In?In.innerHTML=an.title:window.document.title=an.title}if(Cr(an.elts,en),O(Gr,/HX-Trigger-After-Settle:/i)){var $n=Qr;se(Qr)||($n=re().body),_e(Gr,"HX-Trigger-After-Settle",$n)}ie(Mn)};en.settleDelay>0?setTimeout(vn,en.settleDelay):vn()}catch(fn){throw fe(Qr,"htmx:swapError",Wr),ie(Qn),fn}},gn=Q.config.globalViewTransitions;if(en.hasOwnProperty("transition")&&(gn=en.transition),gn&&ce(Qr,"htmx:beforeTransition",Wr)&&typeof Promise<"u"&&document.startViewTransition){var wn=new Promise(function(pn,mn){Mn=pn,Qn=mn}),Un=xn;xn=function(){document.startViewTransition(function(){return Un(),wn})}}en.swapDelay>0?setTimeout(xn,en.swapDelay):xn()}cn&&fe(Qr,"htmx:responseError",le({error:"Response Status Error Code "+Gr.status+" from "+Wr.pathInfo.requestPath},Wr))}}}var Xr={};function Dr(){return{init:function(Qr){return null},onEvent:function(Qr,Wr){return!0},transformResponse:function(Qr,Wr,Gr){return Qr},isInlineSwap:function(Qr){return!1},handleSwap:function(Qr,Wr,Gr,Jr){return!1},encodeParameters:function(Qr,Wr,Gr){return null}}}function Ur(Qr,Wr){Wr.init&&Wr.init(r),Xr[Qr]=le(Dr(),Wr)}function Br(Qr){delete Xr[Qr]}function Fr(Qr,Wr,Gr){if(Qr==null)return Wr;Wr==null&&(Wr=[]),Gr==null&&(Gr=[]);var Jr=te(Qr,"hx-ext");return Jr&&oe(Jr.split(","),function(Zr){if(Zr=Zr.replace(/ /g,""),Zr.slice(0,7)=="ignore:"){Gr.push(Zr.slice(7));return}if(Gr.indexOf(Zr)<0){var Kr=Xr[Zr];Kr&&Wr.indexOf(Kr)<0&&Wr.push(Kr)}}),Fr(u(Qr),Wr,Gr)}var Vr=!1;re().addEventListener("DOMContentLoaded",function(){Vr=!0});function jr(Qr){Vr||re().readyState==="complete"?Qr():re().addEventListener("DOMContentLoaded",Qr)}function _r(){Q.config.includeIndicatorStyles!==!1&&re().head.insertAdjacentHTML("beforeend","<style>                      ."+Q.config.indicatorClass+"{opacity:0}                      ."+Q.config.requestClass+" ."+Q.config.indicatorClass+"{opacity:1; transition: opacity 200ms ease-in;}                      ."+Q.config.requestClass+"."+Q.config.indicatorClass+"{opacity:1; transition: opacity 200ms ease-in;}                    </style>")}function zr(){var Qr=re().querySelector('meta[name="htmx-config"]');return Qr?E(Qr.content):null}function $r(){var Qr=zr();Qr&&(Q.config=le(Q.config,Qr))}return jr(function(){$r(),_r();var Qr=re().body;zt(Qr);var Wr=re().querySelectorAll("[hx-trigger='restored'],[data-hx-trigger='restored']");Qr.addEventListener("htmx:abort",function(Jr){var Zr=Jr.target,Kr=ae(Zr);Kr&&Kr.xhr&&Kr.xhr.abort()});let Gr=window.onpopstate?window.onpopstate.bind(window):null;window.onpopstate=function(Jr){Jr.state&&Jr.state.htmx?(ar(),oe(Wr,function(Zr){ce(Zr,"htmx:restored",{document:re(),triggerEvent:ce})})):Gr&&Gr(Jr)},setTimeout(function(){ce(Qr,"htmx:load",{}),Qr=null},0)}),Q}()})});var uo={};Ho(uo,{default:()=>Mo});var Kn,Mo,fo=Lo(()=>{Kn=Ao(co(),1);console.log("HTMX Wrapper Loaded:",Kn.default);Mo=Kn.default});var Bn=null;var ao=null;var Oo=new Set;var ko=!1;function qo(Qr){ko?Oo.add(Qr):Qr&&typeof Qr.run=="function"?Qr.run():typeof Qr=="function"&&Qr()}function Hn(Qr){let Wr=Qr,Gr=new Set,Jr={get value(){return Bn&&(Gr.add(Bn),Bn.deps.add(Jr)),Wr},set value(Zr){Wr!==Zr&&(Wr=Zr,Array.from(Gr).forEach(Yr=>{Yr&&typeof Yr.run=="function"?qo(Yr):typeof Yr=="function"&&Yr(Zr)}))},subscribe(Zr){return Gr.add(Zr),()=>Gr.delete(Zr)},_addSubscriber(Zr){Gr.add(Zr)},_removeSubscriber(Zr){Gr.delete(Zr)}};return Jr}function On(Qr,Wr={}){let{immediate:Gr=!0}=Wr,Jr=new Set,Zr=!0,Kr={run(){if(!Zr)return;Jr.forEach(tn=>tn._removeSubscriber(Kr)),Jr.clear();let Yr=Bn;Bn=Kr,Kr.deps=Jr;try{return Qr()}finally{Bn=Yr}},stop(){Zr=!1,Jr.forEach(Yr=>Yr._removeSubscriber(Kr)),Jr.clear()},deps:Jr};return ao&&ao.effects.push(Kr),Gr&&Kr.run(),Kr}var Po=new Map;function lo(Qr,Wr){Po.set(Qr,Wr)}lo("if",{mounted(Qr,Wr){Wr.value||(Qr.style.display="none")},updated(Qr,Wr){Qr.style.display=Wr.value?"":"none"}});lo("show",{mounted(Qr,Wr){Qr.style.display=Wr.value?"":"none"},updated(Qr,Wr){Qr.style.display=Wr.value?"":"none"}});var ho;async function No(){try{if(typeof window<"u"){if(ho=await Promise.resolve().then(()=>(fo(),uo)).then(Qr=>Qr.default),!ho)throw new Error("HTMX failed to load.");console.info("[RxHtmx] HTMX loaded successfully.")}}catch(Qr){console.error("[RxHtmx] HTMX not available or failed to load:",Qr)}}typeof window<"u"&&No();var $o=Hn({name:"Kiran Shrestha",title:"Full Stack Developer",email:"kiransth@gmail.com"}),jo=Hn([{category:"Disaster Management",icon:"fas fa-shield-alt",items:["Guardian IMS","Incident Management","Community Engagement","Public Dashboards"]},{category:"Frontend",icon:"fas fa-palette",items:["JavaScript","TypeScript","React","Vue.js","Backbone","Tailwind CSS"]},{category:"Backend",icon:"fas fa-server",items:["Node.js","Express","Python","C#","PostgreSQL","MongoDB","Redis"]},{category:"Tools & Others",icon:"fas fa-tools",items:["Git","Docker","AWS","CI/CD","Jest","Webpack"]}]),Dn=Hn([{name:"Guardian IMS",description:"A disaster management and community engagement platform built from the ground up by the core team at QIT Plus. Used in Australia and Canada to address emergency response and public dashboard goals.",url:"https://www.qitplus.com/guardian-ims",tags:["Disaster Management","Community Engagement","Public Dashboard"],role:"Core Team Developer"}]),_o=Hn(!1),Bo="kiransth77",Do=`https://api.github.com/users/${Bo}/repos`;async function Fo(){try{_o.value=!0;let Qr=document.getElementById("projects-loading");Qr.classList.remove("hidden"),Qr.setAttribute("aria-busy","true"),document.getElementById("load-github-projects").classList.add("hidden");let Wr=await fetch(`${Do}?sort=updated&per_page=12`);if(!Wr.ok)throw new Error("Failed to fetch repositories");let Jr=(await Wr.json()).filter(Zr=>!Zr.fork&&!Zr.private).map(Zr=>({name:Zr.name,description:Zr.description||"No description available",tech:Zr.topics&&Zr.topics.length>0?Zr.topics.slice(0,3):[Zr.language||"Code"].filter(Boolean),github:Zr.html_url,icon:Qo(Zr),stars:Zr.stargazers_count,language:Zr.language}));Dn.value=Jr,Qr.setAttribute("aria-busy","false"),Qr.classList.add("hidden")}catch(Qr){console.error("Error fetching GitHub projects:",Qr),document.getElementById("projects-loading").classList.add("hidden"),document.getElementById("load-github-projects").classList.remove("hidden"),Dn.value=[{name:"RxHtml Framework",description:"A modern reactive frontend framework with components, routing, and state management.",tech:["JavaScript","RxJS","HTMX"],github:"https://github.com/kiransth77/RxHtml",icon:"fas fa-code",stars:0},{name:"Portfolio Website",description:"Personal portfolio and blog built with modern web technologies.",tech:["RxHtml","Tailwind CSS","Node.js"],github:"https://github.com/kiransth77/profile",icon:"fas fa-laptop-code",stars:0}]}}function Qo(Qr){let Wr=Qr.name.toLowerCase();return Wr.includes("framework")||Wr.includes("rxhtml")?"fas fa-code":Wr.includes("web")||Wr.includes("portfolio")?"fas fa-laptop-code":Wr.includes("api")||Wr.includes("backend")?"fas fa-server":Wr.includes("mobile")||Wr.includes("app")?"fas fa-mobile-alt":Wr.includes("bot")?"fas fa-robot":Wr.includes("game")?"fas fa-gamepad":Wr.includes("tool")?"fas fa-tools":"fas fa-folder-open"}document.getElementById("load-github-projects").addEventListener("click",Fo);var Pn=Hn({name:"",email:"",message:""});On(()=>{let Qr=$o.value;document.getElementById("hero-name").textContent=Qr.name,document.getElementById("hero-title").textContent=Qr.title,document.getElementById("contact-email").textContent=Qr.email});On(()=>{let Qr=jo.value,Wr=document.getElementById("skills-container");Wr.innerHTML=Qr.map(Gr=>`
                 <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
                     <div class="flex items-center mb-4">
-                        <i class="${skillGroup.icon} text-3xl text-primary mr-3"></i>
-                        <h3 class="text-2xl font-bold text-gray-800">${skillGroup.category}</h3>
+                        <i class="${Gr.icon} text-3xl text-primary mr-3"></i>
+                        <h3 class="text-2xl font-bold text-gray-800">${Gr.category}</h3>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        ${skillGroup.items.map(skill => `
+                        ${Gr.items.map(Jr=>`
                             <span class="skill-badge bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-semibold">
-                                ${skill}
+                                ${Jr}
                             </span>
-                        `).join('')}
+                        `).join("")}
                     </div>
                 </div>
-            `).join('');
-        });
-        
-        // Render projects
-        effect(() => {
-            const projectsData = projects.value;
-            const container = document.getElementById('projects-container');
-            container.innerHTML = projectsData.map((project, index) => {
-                // Fallbacks for custom projects
-                const icon = project.icon || 'fas fa-briefcase';
-                const techList = Array.isArray(project.tech) ? project.tech : Array.isArray(project.tags) ? project.tags : [];
-                const url = project.github || project.url || '#';
-                const isGithub = !!project.github;
-                return `
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover scroll-zoom-in" style="transition-delay: ${index * 0.1}s">
+            `).join("")});On(()=>{let Qr=Dn.value,Wr=document.getElementById("projects-container");Wr.innerHTML=Qr.map((Jr,Zr)=>{let Kr=Jr.icon||"fas fa-briefcase",Yr=Array.isArray(Jr.tech)?Jr.tech:Array.isArray(Jr.tags)?Jr.tags:[],tn=Jr.github||Jr.url||"#",en=!!Jr.github;return`
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover scroll-zoom-in" style="transition-delay: ${Zr*.1}s">
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center">
-                                <i class="${icon} text-3xl text-primary mr-3"></i>
-                                <h3 class="text-xl font-bold text-gray-800">${project.name}</h3>
+                                <i class="${Kr} text-3xl text-primary mr-3"></i>
+                                <h3 class="text-xl font-bold text-gray-800">${Jr.name}</h3>
                             </div>
-                            ${project.stars !== undefined ? `
+                            ${Jr.stars!==void 0?`
                                 <div class="flex items-center text-yellow-500">
                                     <i class="fas fa-star mr-1"></i>
-                                    <span class="text-sm font-semibold">${project.stars}</span>
+                                    <span class="text-sm font-semibold">${Jr.stars}</span>
                                 </div>
-                            ` : ''}
+                            `:""}
                         </div>
-                        <p class="text-gray-600 mb-4 line-clamp-2">${project.description}</p>
+                        <p class="text-gray-600 mb-4 line-clamp-2">${Jr.description}</p>
                         <div class="flex flex-wrap gap-2 mb-4">
-                            ${techList.map(tech => `
+                            ${Yr.map(rn=>`
                                 <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-semibold">
-                                    ${tech}
+                                    ${rn}
                                 </span>
-                            `).join('')}
+                            `).join("")}
                         </div>
-                        <a href="${url}" target="_blank" rel="noopener noreferrer" 
-                           aria-label="View ${project.name} on ${isGithub ? 'GitHub' : 'Website'}"
+                        <a href="${tn}" target="_blank" rel="noopener noreferrer" 
+                           aria-label="View ${Jr.name} on ${en?"GitHub":"Website"}"
                             class="inline-flex items-center text-primary hover:text-primary-light font-semibold">
-                            View on ${isGithub ? 'GitHub' : 'Website'} <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i>
+                            View on ${en?"GitHub":"Website"} <i class="fas fa-arrow-right ml-2" aria-hidden="true"></i>
                         </a>
                     </div>
                 </div>
-                `;
-            }).join('');
-            
-            // Apply smooth fade-in animations to new project cards with GSAP
-            const cards = container.querySelectorAll('.scroll-zoom-in');
-            if (cards.length) {
-                // Ensure cards are visible immediately, then animate if needed
-                gsap.set(cards, { opacity: 1, y: 0, scale: 1 });
-                
-                // Add hover animations to new cards
-                cards.forEach(card => {
-                    card.addEventListener('mouseenter', () => {
-                        gsap.to(card, {
-                            y: -8,
-                            scale: 1.02,
-                            duration: 0.3,
-                            ease: 'power2.out'
-                        });
-                    });
-                    
-                    card.addEventListener('mouseleave', () => {
-                        gsap.to(card, {
-                            y: 0,
-                            scale: 1,
-                            duration: 0.3,
-                            ease: 'power2.out'
-                        });
-                    });
-                });
-            }
-        });
-        
-        // Contact form handling
-        const nameInput = document.getElementById('name');
-        const emailInput = document.getElementById('email');
-        const messageInput = document.getElementById('message');
-        const form = document.getElementById('contact-form');
-        
-        nameInput.addEventListener('input', (e) => {
-            contactForm.value = { ...contactForm.value, name: e.target.value };
-        });
-        
-        emailInput.addEventListener('input', (e) => {
-            contactForm.value = { ...contactForm.value, email: e.target.value };
-        });
-        
-        messageInput.addEventListener('input', (e) => {
-            contactForm.value = { ...contactForm.value, message: e.target.value };
-        });
-        
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const data = contactForm.value;
-            
-            // Create mailto link with form data
-            const subject = encodeURIComponent('Contact from Portfolio');
-            const body = encodeURIComponent(`Name: ${data.name}\nEmail: ${data.email}\n\nMessage:\n${data.message}`);
-            window.location.href = `mailto:kiransth@gmail.com?subject=${subject}&body=${body}`;
-        });
-        
-        // Set current year
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-        
-        // GSAP - Register ScrollTrigger
-        // GSAP animations without ScrollTrigger to prevent scroll jumping
-        
-        // Preloader fade-out on full load
-        const preloader = document.getElementById('preloader');
-        window.addEventListener('load', () => {
-            if (preloader) {
-                gsap.to(preloader, { opacity: 0, duration: 0.5, onComplete: () => preloader.style.display = 'none' });
-            }
-        });
-        
-        // Hero section - Initial animation with name typing effect
-        gsap.fromTo('#home .fade-in',
-            {
-                opacity: 0,
-                scale: 0.95,
-                filter: 'blur(10px)'
-            },
-            {
-                opacity: 1,
-                scale: 1,
-                filter: 'blur(0px)',
-                duration: 1.2,
-                ease: 'power2.out',
-                delay: 0.2
-            }
-        );
-        
-        // Animate "Hi, I'm Kiran Shrestha" with typing and gradient effect
-        const heroName = document.getElementById('hero-name');
-        const originalName = heroName.textContent;
-        heroName.textContent = '';
-        heroName.style.background = 'linear-gradient(90deg, #fff, #a78bfa, #fff)';
-        heroName.style.backgroundSize = '200% auto';
-        heroName.style.webkitBackgroundClip = 'text';
-        heroName.style.backgroundClip = 'text';
-        heroName.style.webkitTextFillColor = 'transparent';
-        
-        // Typing animation
-        let charIndex = 0;
-        const typeInterval = setInterval(() => {
-            if (charIndex < originalName.length) {
-                heroName.textContent += originalName[charIndex];
-                charIndex++;
-            } else {
-                clearInterval(typeInterval);
-                // Animate gradient after typing completes
-                gsap.to(heroName, {
-                    backgroundPosition: '200% center',
-                    duration: 3,
-                    repeat: -1,
-                    ease: 'linear'
-                });
-            }
-        }, 100);
-        
-        // Use IntersectionObserver for scroll animations (no scroll interference)
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -100px 0px'
-        };
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
-                    entry.target.classList.add('animated');
-                    
-                    if (entry.target.classList.contains('scroll-slide-left')) {
-                        gsap.fromTo(entry.target, 
-                            { opacity: 0, x: -50 },
-                            { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out' }
-                        );
-                    }
-                    else if (entry.target.classList.contains('scroll-slide-right')) {
-                        gsap.fromTo(entry.target,
-                            { opacity: 0, x: 50 },
-                            { opacity: 1, x: 0, duration: 0.8, ease: 'power2.out' }
-                        );
-                    }
-                    else if (entry.target.classList.contains('scroll-fade-in')) {
-                        gsap.fromTo(entry.target,
-                            { opacity: 0, y: 30 },
-                            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }
-                        );
-                    }
-                    else if (entry.target.classList.contains('scroll-zoom-in')) {
-                        gsap.fromTo(entry.target,
-                            { opacity: 0, scale: 0.9 },
-                            { opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out' }
-                        );
-                    }
-                }
-            });
-        }, observerOptions);
-        
-        // Observe all animated elements
-        document.querySelectorAll('.scroll-slide-left, .scroll-slide-right, .scroll-fade-in, .scroll-zoom-in').forEach(el => {
-            observer.observe(el);
-        });
-        
-        // Interactive hover animations
-        document.querySelectorAll('.card-hover').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                gsap.to(card, {
-                    y: -8,
-                    scale: 1.02,
-                    duration: 0.3,
-                    ease: 'power2.out'
-                });
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                gsap.to(card, {
-                    y: 0,
-                    scale: 1,
-                    duration: 0.4,
-                    ease: 'elastic.out(1, 0.5)'
-                });
-            });
-        });
-        
-        // Skill badge hover
-        document.querySelectorAll('.skill-badge').forEach(badge => {
-            badge.addEventListener('mouseenter', () => {
-                gsap.to(badge, {
-                    scale: 1.15,
-                    rotation: 5,
-                    duration: 0.3,
-                    ease: 'back.out(4)'
-                });
-            });
-            
-            badge.addEventListener('mouseleave', () => {
-                gsap.to(badge, {
-                    scale: 1,
-                    rotation: 0,
-                    duration: 0.4,
-                    ease: 'elastic.out(1, 0.6)'
-                });
-            });
-        });
-        
-        // Button magnetic effect with ripple
-        document.querySelectorAll('button, a.bg-white, a.border-2, a.btn-primary').forEach(button => {
-            button.addEventListener('mouseenter', (e) => {
-                gsap.to(e.target, {
-                    scale: 1.05,
-                    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
-                    duration: 0.3,
-                    ease: 'power2.out'
-                });
-            });
-            
-            button.addEventListener('mouseleave', (e) => {
-                gsap.to(e.target, {
-                    scale: 1,
-                    boxShadow: '0 0 0 rgba(0, 0, 0, 0)',
-                    duration: 0.4,
-                    ease: 'elastic.out(1, 0.5)'
-                });
-            });
-        });
-        
-        // Form input focus
-        document.querySelectorAll('input, textarea').forEach(input => {
-            input.addEventListener('focus', (e) => {
-                gsap.to(e.target, {
-                    scale: 1.02,
-                    boxShadow: '0 0 0 3px rgba(124, 58, 237, 0.1)',
-                    duration: 0.3,
-                    ease: 'power2.out'
-                });
-            });
-            
-            input.addEventListener('blur', (e) => {
-                gsap.to(e.target, {
-                    scale: 1,
-                    boxShadow: '0 0 0 0px rgba(124, 58, 237, 0)',
-                    duration: 0.3,
-                    ease: 'power2.out'
-                });
-            });
-        });
-        
-        // Smooth scrolling with offset for fixed nav
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    const navHeight = 80; // Approximate nav height
-                    const targetPosition = target.offsetTop - navHeight;
-                    
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
+                `}).join("");let Gr=Wr.querySelectorAll(".scroll-zoom-in");Gr.length&&(gsap.set(Gr,{opacity:1,y:0,scale:1}),Gr.forEach(Jr=>{Jr.addEventListener("mouseenter",()=>{gsap.to(Jr,{y:-8,scale:1.02,duration:.3,ease:"power2.out"})}),Jr.addEventListener("mouseleave",()=>{gsap.to(Jr,{y:0,scale:1,duration:.3,ease:"power2.out"})})}))});var Uo=document.getElementById("name"),Xo=document.getElementById("email"),zo=document.getElementById("message"),Wo=document.getElementById("contact-form");Uo.addEventListener("input",Qr=>{Pn.value={...Pn.value,name:Qr.target.value}});Xo.addEventListener("input",Qr=>{Pn.value={...Pn.value,email:Qr.target.value}});zo.addEventListener("input",Qr=>{Pn.value={...Pn.value,message:Qr.target.value}});Wo.addEventListener("submit",Qr=>{Qr.preventDefault();let Wr=Pn.value,Gr=encodeURIComponent("Contact from Portfolio"),Jr=encodeURIComponent(`Name: ${Wr.name}
+Email: ${Wr.email}
+
+Message:
+${Wr.message}`);window.location.href=`mailto:kiransth@gmail.com?subject=${Gr}&body=${Jr}`});document.getElementById("current-year").textContent=new Date().getFullYear();var eo=document.getElementById("preloader");window.addEventListener("load",()=>{eo&&gsap.to(eo,{opacity:0,duration:.5,onComplete:()=>eo.style.display="none"})});gsap.fromTo("#home .fade-in",{opacity:0,scale:.95,filter:"blur(10px)"},{opacity:1,scale:1,filter:"blur(0px)",duration:1.2,ease:"power2.out",delay:.2});var Rn=document.getElementById("hero-name"),po=Rn.textContent;Rn.textContent="";Rn.style.background="linear-gradient(90deg, #fff, #a78bfa, #fff)";Rn.style.backgroundSize="200% auto";Rn.style.webkitBackgroundClip="text";Rn.style.backgroundClip="text";Rn.style.webkitTextFillColor="transparent";var to=0,Go=setInterval(()=>{to<po.length?(Rn.textContent+=po[to],to++):(clearInterval(Go),gsap.to(Rn,{backgroundPosition:"200% center",duration:3,repeat:-1,ease:"linear"}))},100),Jo={threshold:.1,rootMargin:"0px 0px -100px 0px"},Vo=new IntersectionObserver(Qr=>{Qr.forEach(Wr=>{Wr.isIntersecting&&!Wr.target.classList.contains("animated")&&(Wr.target.classList.add("animated"),Wr.target.classList.contains("scroll-slide-left")?gsap.fromTo(Wr.target,{opacity:0,x:-50},{opacity:1,x:0,duration:.8,ease:"power2.out"}):Wr.target.classList.contains("scroll-slide-right")?gsap.fromTo(Wr.target,{opacity:0,x:50},{opacity:1,x:0,duration:.8,ease:"power2.out"}):Wr.target.classList.contains("scroll-fade-in")?gsap.fromTo(Wr.target,{opacity:0,y:30},{opacity:1,y:0,duration:.8,ease:"power2.out"}):Wr.target.classList.contains("scroll-zoom-in")&&gsap.fromTo(Wr.target,{opacity:0,scale:.9},{opacity:1,scale:1,duration:.6,ease:"power2.out"}))})},Jo);document.querySelectorAll(".scroll-slide-left, .scroll-slide-right, .scroll-fade-in, .scroll-zoom-in").forEach(Qr=>{Vo.observe(Qr)});document.querySelectorAll(".card-hover").forEach(Qr=>{Qr.addEventListener("mouseenter",()=>{gsap.to(Qr,{y:-8,scale:1.02,duration:.3,ease:"power2.out"})}),Qr.addEventListener("mouseleave",()=>{gsap.to(Qr,{y:0,scale:1,duration:.4,ease:"elastic.out(1, 0.5)"})})});document.querySelectorAll(".skill-badge").forEach(Qr=>{Qr.addEventListener("mouseenter",()=>{gsap.to(Qr,{scale:1.15,rotation:5,duration:.3,ease:"back.out(4)"})}),Qr.addEventListener("mouseleave",()=>{gsap.to(Qr,{scale:1,rotation:0,duration:.4,ease:"elastic.out(1, 0.6)"})})});document.querySelectorAll("button, a.bg-white, a.border-2, a.btn-primary").forEach(Qr=>{Qr.addEventListener("mouseenter",Wr=>{gsap.to(Wr.target,{scale:1.05,boxShadow:"0 10px 25px rgba(0, 0, 0, 0.15)",duration:.3,ease:"power2.out"})}),Qr.addEventListener("mouseleave",Wr=>{gsap.to(Wr.target,{scale:1,boxShadow:"0 0 0 rgba(0, 0, 0, 0)",duration:.4,ease:"elastic.out(1, 0.5)"})})});document.querySelectorAll("input, textarea").forEach(Qr=>{Qr.addEventListener("focus",Wr=>{gsap.to(Wr.target,{scale:1.02,boxShadow:"0 0 0 3px rgba(124, 58, 237, 0.1)",duration:.3,ease:"power2.out"})}),Qr.addEventListener("blur",Wr=>{gsap.to(Wr.target,{scale:1,boxShadow:"0 0 0 0px rgba(124, 58, 237, 0)",duration:.3,ease:"power2.out"})})});var qn,Fn=!1,Cn=150,kn=0;function mo(){let Qr=document.getElementById("project-cube"),Wr=Dn.value,Gr=Wr.slice(kn,kn+6),Jr=[{name:"front",transform:`rotateY(0deg) translateZ(${Cn}px)`},{name:"back",transform:`rotateY(180deg) translateZ(${Cn}px)`},{name:"right",transform:`rotateY(90deg) translateZ(${Cn}px)`},{name:"left",transform:`rotateY(-90deg) translateZ(${Cn}px)`},{name:"top",transform:`rotateX(90deg) translateZ(${Cn}px)`},{name:"bottom",transform:`rotateX(-90deg) translateZ(${Cn}px)`}],Zr=["linear-gradient(135deg, #667eea 0%, #764ba2 100%)","linear-gradient(135deg, #764ba2 0%, #667eea 100%)","linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)","linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)","linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)","linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)"];Qr.innerHTML="",Jr.forEach((Kr,Yr)=>{let tn=document.createElement("div");if(tn.className="cube-face",tn.style.cssText=`
+                    position: absolute;
+                    width: ${Cn*2}px;
+                    height: ${Cn*2}px;
+                    background: ${Zr[Yr]};
+                    border: 2px solid rgba(255, 255, 255, 0.2);
+                    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.3), 0 0 20px rgba(124, 58, 237, 0.3);
+                    transform: ${Kr.transform};
+                    backface-visibility: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                    padding: 1.5rem;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                `,Gr[Yr]){let en=Gr[Yr],rn=kn+Yr,nn=en.name.length>20?en.name.substring(0,17)+"...":en.name,on=en.description.length>60?en.description.substring(0,57)+"...":en.description;tn.innerHTML=`
+                        <div style="font-size: 2.5rem; opacity: 0.12; margin-bottom: 0.5rem; font-weight: bold; position: absolute; top: 10px; right: 15px;">${rn+1}</div>
+                        <h4 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.75rem; line-height: 1.2; max-width: 100%;">${nn}</h4>
+                        <p style="font-size: 0.75rem; opacity: 0.85; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; max-width: 100%;">${on}</p>
+                        ${en.tech&&en.tech.length>0?`
+                            <div style="margin-top: auto; padding-top: 0.75rem; display: flex; gap: 0.25rem; flex-wrap: wrap; justify-content: center;">
+                                ${en.tech.slice(0,2).map(sn=>`<span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.625rem;">${sn}</span>`).join("")}
+                            </div>
+                        `:""}
+                    `,tn.dataset.projectIndex=rn,tn.addEventListener("mouseenter",()=>{Fn||gsap.to(tn,{boxShadow:"inset 0 0 80px rgba(0, 0, 0, 0.4), 0 0 40px rgba(124, 58, 237, 0.6)",duration:.3})}),tn.addEventListener("mouseleave",()=>{Fn||gsap.to(tn,{boxShadow:"inset 0 0 60px rgba(0, 0, 0, 0.3), 0 0 20px rgba(124, 58, 237, 0.3)",duration:.3})}),tn.addEventListener("click",sn=>{sn.stopPropagation(),Yo(rn)})}else{let en=Wr.length>kn+6,rn=kn>0;en||rn?(tn.innerHTML=`
+                            <div style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;">\u21BB</div>
+                            <p style="font-size: 0.875rem; opacity: 0.6;">Click to see<br>${en?"more":"previous"} projects</p>
+                        `,tn.addEventListener("click",()=>{kn=en?kn+6:0,mo()})):(tn.innerHTML=`
+                            <div style="font-size: 5rem; opacity: 0.3;">+</div>
+                            <p style="font-size: 0.875rem; margin-top: 1rem; opacity: 0.6;">More projects<br>coming soon</p>
+                        `,tn.style.cursor="default")}Qr.appendChild(tn)}),Zo()}function Zo(){let Qr=document.getElementById("project-cube");qn&&qn.kill(),gsap.set(Qr,{rotationX:-20,rotationY:45}),qn=gsap.to(Qr,{rotationY:"+=360",duration:25,repeat:-1,ease:"none",modifiers:{rotationY:gsap.utils.unitize(Wr=>parseFloat(Wr)%360)}})}function Yo(Qr){if(Fn)return;let Wr=Dn.value[Qr];Wr&&(qn&&qn.pause(),Ko(()=>{ti(Wr)}))}function Ko(Qr){Fn=!0;let Wr=document.getElementById("project-cube"),Gr=document.getElementById("cube-scene"),Jr=document.getElementById("shattered-pieces"),Zr=Wr.querySelectorAll(".cube-face");Jr.innerHTML="";let Kr=[];Zr.forEach(Yr=>{let en=Cn*2/6,rn=Yr.style.transform;for(let nn=0;nn<6;nn++)for(let on=0;on<6;on++){let sn=document.createElement("div");sn.style.cssText=`
+                            position: absolute;
+                            width: ${en}px;
+                            height: ${en}px;
+                            background: ${Yr.style.background};
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                            left: 50%;
+                            top: 50%;
+                            margin-left: ${-en/2+(on-6/2+.5)*en}px;
+                            margin-top: ${-en/2+(nn-6/2+.5)*en}px;
+                            transform: ${rn};
+                            transform-style: preserve-3d;
+                        `,Jr.appendChild(sn),Kr.push(sn);let cn=Math.random()*Math.PI*2,yn=300+Math.random()*500,hn=Math.cos(cn)*yn,Ln=Math.sin(cn)*yn,Mn=(Math.random()-.5)*600;gsap.to(sn,{x:hn,y:Ln,z:Mn,rotationX:Math.random()*720-360,rotationY:Math.random()*720-360,rotationZ:Math.random()*720-360,opacity:0,scale:.5,duration:1.2,ease:"power2.out",delay:(nn+on)*.008})}}),gsap.to(Wr,{opacity:0,scale:.8,duration:.4,onComplete:()=>{Wr.style.visibility="hidden",Qr&&Qr()}})}function ei(){let Qr=document.getElementById("project-cube"),Wr=document.getElementById("shattered-pieces"),Gr=Wr.querySelectorAll("div"),Jr=gsap.timeline({onComplete:()=>{Wr.innerHTML="",Qr.style.visibility="visible",gsap.to(Qr,{opacity:1,scale:1,duration:.6,ease:"back.out(1.7)",onComplete:()=>{Fn=!1,qn&&qn.resume()}})}});Gr.forEach((Zr,Kr)=>{Jr.to(Zr,{x:0,y:0,z:0,rotationX:0,rotationY:0,rotationZ:0,opacity:1,scale:1,duration:.8,ease:"back.out(1.4)",delay:Kr*.003},0)})}function ti(Qr){let Wr=document.getElementById("project-detail-modal"),Gr=document.getElementById("modal-content");document.getElementById("modal-project-name").textContent=Qr.name,document.getElementById("modal-project-description").textContent=Qr.description;let Jr=document.getElementById("modal-project-tech");Jr.innerHTML=(Qr.tech||[]).map(Kr=>`<span class="bg-purple-600 px-3 py-1 rounded-full text-sm">${Kr}</span>`).join("");let Zr=document.getElementById("modal-project-links");Zr.innerHTML="",Qr.github&&(Zr.innerHTML+=`
+                    <a href="${Qr.github}" target="_blank" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg transition flex items-center gap-2">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </a>
+                `),Qr.url&&(Zr.innerHTML+=`
+                    <a href="${Qr.url}" target="_blank" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg transition flex items-center gap-2">
+                        <i class="fas fa-external-link-alt"></i> Visit Site
+                    </a>
+                `),Wr.style.display="flex",gsap.to(Gr,{scale:1,duration:.5,ease:"back.out(1.7)"})}function go(){let Qr=document.getElementById("project-detail-modal"),Wr=document.getElementById("modal-content");gsap.to(Wr,{scale:0,duration:.3,ease:"back.in(1.7)",onComplete:()=>{Qr.style.display="none",ei()}})}document.getElementById("modal-close").addEventListener("click",go);document.getElementById("project-detail-modal").addEventListener("click",Qr=>{Qr.target.id==="project-detail-modal"&&go()});On(()=>{Dn.value.length>0&&setTimeout(()=>mo(),100)});document.querySelectorAll('a[href^="#"]').forEach(Qr=>{Qr.addEventListener("click",function(Wr){Wr.preventDefault();let Gr=document.querySelector(this.getAttribute("href"));if(Gr){let Zr=Gr.offsetTop-80;window.scrollTo({top:Zr,behavior:"smooth"})}})});
+
     </script>
 </body>
 </html>

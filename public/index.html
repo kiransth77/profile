@@ -128,11 +128,46 @@
     </section>
 
     <!-- Projects Section -->
-    <section id="projects" class="py-20 bg-white">
+    <section id="projects" class="py-20 bg-gray-900 text-white relative overflow-hidden">
         <div class="max-w-6xl mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center mb-12 text-gray-800 scroll-fade-in">
+            <h2 class="text-4xl font-bold text-center mb-4 scroll-fade-in">
                 Featured Projects
             </h2>
+            <p class="text-center text-gray-400 mb-12">Click on the cube to explore projects</p>
+            
+            <!-- 3D Cube Container -->
+            <div class="flex justify-center mb-12">
+                <div id="cube-scene" style="width: 300px; height: 300px; perspective: 1000px;">
+                    <div id="project-cube" style="width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transform: translateZ(-150px);">
+                        <!-- Cube will be generated here -->
+                    </div>
+                    
+                    <!-- Shattered pieces container -->
+                    <div id="shattered-pieces" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; transform-style: preserve-3d;"></div>
+                </div>
+            </div>
+            
+            <!-- Project Detail Modal -->
+            <div id="project-detail-modal" style="display: none;" class="fixed inset-0 z-50 items-center justify-center bg-black/80 backdrop-blur-sm">
+                <div class="bg-gray-800 rounded-2xl max-w-3xl w-full mx-4 shadow-2xl transform scale-0" id="modal-content">
+                    <div class="p-8">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 id="modal-project-name" class="text-3xl font-bold mb-2"></h3>
+                                <p id="modal-project-description" class="text-gray-300"></p>
+                            </div>
+                            <button id="modal-close" class="text-gray-400 hover:text-white transition">
+                                <i class="fas fa-times text-2xl"></i>
+                            </button>
+                        </div>
+                        
+                        <div id="modal-project-tech" class="flex flex-wrap gap-2 mb-6"></div>
+                        
+                        <div id="modal-project-links" class="flex gap-4"></div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="flex justify-center mb-8">
                 <button id="load-github-projects" class="btn-primary scroll-fade-in">
                     <i class="fab fa-github mr-2"></i>Load Projects from GitHub
@@ -291,7 +326,7 @@
 
     <!-- RxHtml Framework Integration -->
     <script type="module">
-        import { signal, effect } from './rxhtml/core/signal.js';
+        import { signal, effect } from '@kiransth/rxhtmx';
         
         // Initialize reactive state
         const profileData = signal({
@@ -736,6 +771,371 @@
                     ease: 'power2.out'
                 });
             });
+        });
+        
+        // 3D Cube Projects Setup with GSAP
+        let cubeRotationTimeline;
+        let isShattered = false;
+        const CUBE_SIZE = 150; // Half of face size (300px / 2)
+        let currentCubeIndex = 0;
+        
+        function createProjectCube() {
+            const cube = document.getElementById('project-cube');
+            const projectsList = projects.value;
+            
+            // Show 6 projects at a time
+            const displayProjects = projectsList.slice(currentCubeIndex, currentCubeIndex + 6);
+            
+            const faces = [
+                { name: 'front', transform: `rotateY(0deg) translateZ(${CUBE_SIZE}px)` },
+                { name: 'back', transform: `rotateY(180deg) translateZ(${CUBE_SIZE}px)` },
+                { name: 'right', transform: `rotateY(90deg) translateZ(${CUBE_SIZE}px)` },
+                { name: 'left', transform: `rotateY(-90deg) translateZ(${CUBE_SIZE}px)` },
+                { name: 'top', transform: `rotateX(90deg) translateZ(${CUBE_SIZE}px)` },
+                { name: 'bottom', transform: `rotateX(-90deg) translateZ(${CUBE_SIZE}px)` }
+            ];
+            
+            const gradients = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)',
+                'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)'
+            ];
+            
+            cube.innerHTML = '';
+            
+            faces.forEach((face, index) => {
+                const faceElement = document.createElement('div');
+                faceElement.className = 'cube-face';
+                faceElement.style.cssText = `
+                    position: absolute;
+                    width: ${CUBE_SIZE * 2}px;
+                    height: ${CUBE_SIZE * 2}px;
+                    background: ${gradients[index]};
+                    border: 2px solid rgba(255, 255, 255, 0.2);
+                    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.3), 0 0 20px rgba(124, 58, 237, 0.3);
+                    transform: ${face.transform};
+                    backface-visibility: hidden;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                    padding: 1.5rem;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                `;
+                
+                if (displayProjects[index]) {
+                    const project = displayProjects[index];
+                    const actualIndex = currentCubeIndex + index;
+                    
+                    // Truncate name if too long
+                    const displayName = project.name.length > 20 
+                        ? project.name.substring(0, 17) + '...' 
+                        : project.name;
+                    
+                    // Truncate description
+                    const displayDesc = project.description.length > 60 
+                        ? project.description.substring(0, 57) + '...' 
+                        : project.description;
+                    
+                    faceElement.innerHTML = `
+                        <div style="font-size: 2.5rem; opacity: 0.12; margin-bottom: 0.5rem; font-weight: bold; position: absolute; top: 10px; right: 15px;">${actualIndex + 1}</div>
+                        <h4 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.75rem; line-height: 1.2; max-width: 100%;">${displayName}</h4>
+                        <p style="font-size: 0.75rem; opacity: 0.85; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; max-width: 100%;">${displayDesc}</p>
+                        ${project.tech && project.tech.length > 0 ? `
+                            <div style="margin-top: auto; padding-top: 0.75rem; display: flex; gap: 0.25rem; flex-wrap: wrap; justify-content: center;">
+                                ${project.tech.slice(0, 2).map(tech => 
+                                    `<span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.625rem;">${tech}</span>`
+                                ).join('')}
+                            </div>
+                        ` : ''}
+                    `;
+                    faceElement.dataset.projectIndex = actualIndex;
+                    
+                    // Hover effect
+                    faceElement.addEventListener('mouseenter', () => {
+                        if (!isShattered) {
+                            gsap.to(faceElement, {
+                                boxShadow: 'inset 0 0 80px rgba(0, 0, 0, 0.4), 0 0 40px rgba(124, 58, 237, 0.6)',
+                                duration: 0.3
+                            });
+                        }
+                    });
+                    
+                    faceElement.addEventListener('mouseleave', () => {
+                        if (!isShattered) {
+                            gsap.to(faceElement, {
+                                boxShadow: 'inset 0 0 60px rgba(0, 0, 0, 0.3), 0 0 20px rgba(124, 58, 237, 0.3)',
+                                duration: 0.3
+                            });
+                        }
+                    });
+                    
+                    faceElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        handleFaceClick(actualIndex);
+                    });
+                } else {
+                    // Empty face - show navigation or placeholder
+                    const hasMore = projectsList.length > currentCubeIndex + 6;
+                    const hasPrev = currentCubeIndex > 0;
+                    
+                    if (hasMore || hasPrev) {
+                        faceElement.innerHTML = `
+                            <div style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;">↻</div>
+                            <p style="font-size: 0.875rem; opacity: 0.6;">Click to see<br>${hasMore ? 'more' : 'previous'} projects</p>
+                        `;
+                        faceElement.addEventListener('click', () => {
+                            currentCubeIndex = hasMore ? currentCubeIndex + 6 : 0;
+                            createProjectCube();
+                        });
+                    } else {
+                        faceElement.innerHTML = `
+                            <div style="font-size: 5rem; opacity: 0.3;">+</div>
+                            <p style="font-size: 0.875rem; margin-top: 1rem; opacity: 0.6;">More projects<br>coming soon</p>
+                        `;
+                        faceElement.style.cursor = 'default';
+                    }
+                }
+                
+                cube.appendChild(faceElement);
+            });
+            
+            // Start rotation animation
+            startCubeRotation();
+        }
+        
+        function startCubeRotation() {
+            const cube = document.getElementById('project-cube');
+            
+            if (cubeRotationTimeline) {
+                cubeRotationTimeline.kill();
+            }
+            
+            // Set initial rotation for better view
+            gsap.set(cube, {
+                rotationX: -20,
+                rotationY: 45
+            });
+            
+            cubeRotationTimeline = gsap.to(cube, {
+                rotationY: '+=360',
+                duration: 25,
+                repeat: -1,
+                ease: 'none',
+                modifiers: {
+                    rotationY: gsap.utils.unitize(value => parseFloat(value) % 360)
+                }
+            });
+        }
+        
+        function handleFaceClick(projectIndex) {
+            if (isShattered) return;
+            
+            const project = projects.value[projectIndex];
+            if (!project) return;
+            
+            // Stop rotation
+            if (cubeRotationTimeline) {
+                cubeRotationTimeline.pause();
+            }
+            
+            // Shatter the cube
+            shatterCube(() => {
+                showProjectDetail(project);
+            });
+        }
+        
+        function shatterCube(callback) {
+            isShattered = true;
+            const cube = document.getElementById('project-cube');
+            const scene = document.getElementById('cube-scene');
+            const shatteredContainer = document.getElementById('shattered-pieces');
+            const faces = cube.querySelectorAll('.cube-face');
+            
+            shatteredContainer.innerHTML = '';
+            
+            const pieces = [];
+            
+            // Create fragments from each face
+            faces.forEach((face) => {
+                const piecesPerSide = 6;
+                const pieceSize = (CUBE_SIZE * 2) / piecesPerSide;
+                
+                // Get the face's transform
+                const faceTransform = face.style.transform;
+                
+                for (let row = 0; row < piecesPerSide; row++) {
+                    for (let col = 0; col < piecesPerSide; col++) {
+                        const piece = document.createElement('div');
+                        piece.style.cssText = `
+                            position: absolute;
+                            width: ${pieceSize}px;
+                            height: ${pieceSize}px;
+                            background: ${face.style.background};
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                            left: 50%;
+                            top: 50%;
+                            margin-left: ${-pieceSize/2 + (col - piecesPerSide/2 + 0.5) * pieceSize}px;
+                            margin-top: ${-pieceSize/2 + (row - piecesPerSide/2 + 0.5) * pieceSize}px;
+                            transform: ${faceTransform};
+                            transform-style: preserve-3d;
+                        `;
+                        
+                        shatteredContainer.appendChild(piece);
+                        pieces.push(piece);
+                        
+                        // Random explosion direction
+                        const angle = Math.random() * Math.PI * 2;
+                        const distance = 300 + Math.random() * 500;
+                        const x = Math.cos(angle) * distance;
+                        const y = Math.sin(angle) * distance;
+                        const z = (Math.random() - 0.5) * 600;
+                        
+                        gsap.to(piece, {
+                            x: x,
+                            y: y,
+                            z: z,
+                            rotationX: Math.random() * 720 - 360,
+                            rotationY: Math.random() * 720 - 360,
+                            rotationZ: Math.random() * 720 - 360,
+                            opacity: 0,
+                            scale: 0.5,
+                            duration: 1.2,
+                            ease: 'power2.out',
+                            delay: (row + col) * 0.008
+                        });
+                    }
+                }
+            });
+            
+            // Hide original cube
+            gsap.to(cube, {
+                opacity: 0,
+                scale: 0.8,
+                duration: 0.4,
+                onComplete: () => {
+                    cube.style.visibility = 'hidden';
+                    if (callback) callback();
+                }
+            });
+        }
+        
+        function rebuildCube() {
+            const cube = document.getElementById('project-cube');
+            const shatteredContainer = document.getElementById('shattered-pieces');
+            const pieces = shatteredContainer.querySelectorAll('div');
+            
+            // Animate pieces back to center
+            const tl = gsap.timeline({
+                onComplete: () => {
+                    shatteredContainer.innerHTML = '';
+                    cube.style.visibility = 'visible';
+                    
+                    gsap.to(cube, {
+                        opacity: 1,
+                        scale: 1,
+                        duration: 0.6,
+                        ease: 'back.out(1.7)',
+                        onComplete: () => {
+                            isShattered = false;
+                            if (cubeRotationTimeline) {
+                                cubeRotationTimeline.resume();
+                            }
+                        }
+                    });
+                }
+            });
+            
+            pieces.forEach((piece, index) => {
+                tl.to(piece, {
+                    x: 0,
+                    y: 0,
+                    z: 0,
+                    rotationX: 0,
+                    rotationY: 0,
+                    rotationZ: 0,
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.8,
+                    ease: 'back.out(1.4)',
+                    delay: index * 0.003
+                }, 0);
+            });
+        }
+        
+        function showProjectDetail(project) {
+            const modal = document.getElementById('project-detail-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            document.getElementById('modal-project-name').textContent = project.name;
+            document.getElementById('modal-project-description').textContent = project.description;
+            
+            const techContainer = document.getElementById('modal-project-tech');
+            techContainer.innerHTML = (project.tech || []).map(tech => 
+                `<span class="bg-purple-600 px-3 py-1 rounded-full text-sm">${tech}</span>`
+            ).join('');
+            
+            const linksContainer = document.getElementById('modal-project-links');
+            linksContainer.innerHTML = '';
+            
+            if (project.github) {
+                linksContainer.innerHTML += `
+                    <a href="${project.github}" target="_blank" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg transition flex items-center gap-2">
+                        <i class="fab fa-github"></i> View on GitHub
+                    </a>
+                `;
+            }
+            
+            if (project.url) {
+                linksContainer.innerHTML += `
+                    <a href="${project.url}" target="_blank" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg transition flex items-center gap-2">
+                        <i class="fas fa-external-link-alt"></i> Visit Site
+                    </a>
+                `;
+            }
+            
+            // Show modal with animation
+            modal.style.display = 'flex';
+            gsap.to(modalContent, {
+                scale: 1,
+                duration: 0.5,
+                ease: 'back.out(1.7)'
+            });
+        }
+        
+        function closeProjectDetail() {
+            const modal = document.getElementById('project-detail-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            gsap.to(modalContent, {
+                scale: 0,
+                duration: 0.3,
+                ease: 'back.in(1.7)',
+                onComplete: () => {
+                    modal.style.display = 'none';
+                    rebuildCube();
+                }
+            });
+        }
+        
+        document.getElementById('modal-close').addEventListener('click', closeProjectDetail);
+        document.getElementById('project-detail-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'project-detail-modal') {
+                closeProjectDetail();
+            }
+        });
+        
+        // Initialize cube when projects are loaded
+        effect(() => {
+            const projectsList = projects.value;
+            if (projectsList.length > 0) {
+                setTimeout(() => createProjectCube(), 100);
+            }
         });
         
         // Smooth scrolling with offset for fixed nav
