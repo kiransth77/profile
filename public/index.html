@@ -168,75 +168,20 @@
                 </div>
             </div>
             
-            <div class="flex justify-center mb-8">
-                <button id="load-github-projects" class="btn-primary scroll-fade-in">
-                    <i class="fab fa-github mr-2"></i>Load Projects from GitHub
-                </button>
-            </div>
-                <div id="projects-loading" class="hidden" aria-live="polite" aria-busy="true">
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="bg-white rounded-xl shadow-lg p-6 animate-pulse">
-                        <div class="h-8 w-2/3 bg-gray-200 rounded mb-4"></div>
-                        <div class="h-4 w-full bg-gray-200 rounded mb-2"></div>
-                        <div class="h-4 w-5/6 bg-gray-200 rounded mb-2"></div>
-                        <div class="flex gap-2 mt-4">
-                            <div class="h-6 w-16 bg-gray-200 rounded-full"></div>
-                            <div class="h-6 w-20 bg-gray-200 rounded-full"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 animate-pulse">
-                        <div class="h-8 w-2/3 bg-gray-200 rounded mb-4"></div>
-                        <div class="h-4 w-full bg-gray-200 rounded mb-2"></div>
-                        <div class="h-4 w-5/6 bg-gray-200 rounded mb-2"></div>
-                        <div class="flex gap-2 mt-4">
-                            <div class="h-6 w-16 bg-gray-200 rounded-full"></div>
-                            <div class="h-6 w-20 bg-gray-200 rounded-full"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 animate-pulse">
-                        <div class="h-8 w-2/3 bg-gray-200 rounded mb-4"></div>
-                        <div class="h-4 w-full bg-gray-200 rounded mb-2"></div>
-                        <div class="h-4 w-5/6 bg-gray-200 rounded mb-2"></div>
-                        <div class="flex gap-2 mt-4">
-                            <div class="h-6 w-16 bg-gray-200 rounded-full"></div>
-                            <div class="h-6 w-20 bg-gray-200 rounded-full"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 animate-pulse hidden md:block">
-                        <div class="h-8 w-2/3 bg-gray-200 rounded mb-4"></div>
-                        <div class="h-4 w-full bg-gray-200 rounded mb-2"></div>
-                        <div class="h-4 w-5/6 bg-gray-200 rounded mb-2"></div>
-                        <div class="flex gap-2 mt-4">
-                            <div class="h-6 w-16 bg-gray-200 rounded-full"></div>
-                            <div class="h-6 w-20 bg-gray-200 rounded-full"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 animate-pulse hidden lg:block">
-                        <div class="h-8 w-2/3 bg-gray-200 rounded mb-4"></div>
-                        <div class="h-4 w-full bg-gray-200 rounded mb-2"></div>
-                        <div class="h-4 w-5/6 bg-gray-200 rounded mb-2"></div>
-                        <div class="flex gap-2 mt-4">
-                            <div class="h-6 w-16 bg-gray-200 rounded-full"></div>
-                            <div class="h-6 w-20 bg-gray-200 rounded-full"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-lg p-6 animate-pulse hidden lg:block">
-                        <div class="h-8 w-2/3 bg-gray-200 rounded mb-4"></div>
-                        <div class="h-4 w-full bg-gray-200 rounded mb-2"></div>
-                        <div class="h-4 w-5/6 bg-gray-200 rounded mb-2"></div>
-                        <div class="flex gap-2 mt-4">
-                            <div class="h-6 w-16 bg-gray-200 rounded-full"></div>
-                            <div class="h-6 w-20 bg-gray-200 rounded-full"></div>
-                        </div>
-                    </div>
+            <div id="projects-loading" class="hidden text-center mb-12" aria-live="polite" aria-busy="true">
+                <div class="inline-block">
+                    <div class="h-12 w-12 animate-spin rounded-full border-4 border-purple-600/30 border-t-purple-600 mb-4"></div>
+                    <p class="text-gray-400">Loading projects...</p>
                 </div>
             </div>
-            <div id="projects-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Projects will be dynamically loaded here -->
+            
+            <!-- Projects Grid Display -->
+            <div id="projects-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Projects will be displayed here -->
             </div>
         </div>
     </section>
-
+          
     <!-- Contact Section -->
     <section id="contact" class="py-20 gradient-bg text-white">
         <div class="max-w-4xl mx-auto px-4">
@@ -252,8 +197,8 @@
                                 <i class="fas fa-envelope text-2xl" aria-hidden="true"></i>
                                 <div>
                                     <p class="font-semibold">Email</p>
-                                    <a href="mailto:kiransth@gmail.com" class="opacity-90 hover:underline">
-                                        <span id="contact-email">kiransth@gmail.com</span>
+                                    <a href="mailto:mailtokiransth@gmail.com" class="opacity-90 hover:underline">
+                                        <span id="contact-email">mailtokiransth@gmail.com</span>
                                     </a>
                                 </div>
                             </div>
@@ -332,7 +277,7 @@
         const profileData = signal({
             name: 'Kiran Shrestha',
             title: 'Full Stack Developer',
-            email: 'kiransth@gmail.com'
+            email: 'mailtokiransth@gmail.com'
         });
         
         const skills = signal([
@@ -380,12 +325,20 @@
                 const loading = document.getElementById('projects-loading');
                 loading.classList.remove('hidden');
                 loading.setAttribute('aria-busy', 'true');
-                document.getElementById('load-github-projects').classList.add('hidden');
                 
-                const response = await fetch(`${GITHUB_API_URL}?sort=updated&per_page=12`);
-                if (!response.ok) throw new Error('Failed to fetch repositories');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+                
+                const response = await fetch(`${GITHUB_API_URL}?sort=updated&per_page=12`, {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to fetch repositories`);
                 
                 const repos = await response.json();
+                
+                if (!Array.isArray(repos)) throw new Error('Invalid response format');
                 
                 // Filter and map repositories to project format
                 const githubProjects = repos
@@ -402,31 +355,46 @@
                         language: repo.language
                     }));
                 
+                if (githubProjects.length === 0) {
+                    throw new Error('No public repositories found');
+                }
+                
                 projects.value = githubProjects;
                 loading.setAttribute('aria-busy', 'false');
                 loading.classList.add('hidden');
             } catch (error) {
-                console.error('Error fetching GitHub projects:', error);
-                document.getElementById('projects-loading').classList.add('hidden');
-                document.getElementById('load-github-projects').classList.remove('hidden');
+                console.error('Error fetching GitHub projects:', error.message);
+                const loading = document.getElementById('projects-loading');
+                loading.classList.add('hidden');
                 
-                // Fallback to default projects
+                // Fallback to default projects with more detail
                 projects.value = [
                     {
                         name: 'RxHtml Framework',
-                        description: 'A modern reactive frontend framework with components, routing, and state management.',
+                        description: 'A modern reactive frontend framework with components, routing, and state management built with RxJS and HTMX.',
                         tech: ['JavaScript', 'RxJS', 'HTMX'],
                         github: 'https://github.com/kiransth77/RxHtml',
                         icon: 'fas fa-code',
-                        stars: 0
+                        stars: 0,
+                        language: 'JavaScript'
                     },
                     {
                         name: 'Portfolio Website',
-                        description: 'Personal portfolio and blog built with modern web technologies.',
-                        tech: ['RxHtml', 'Tailwind CSS', 'Node.js'],
+                        description: 'Personal portfolio website featuring interactive 3D cube with project showcase, built with modern web technologies.',
+                        tech: ['Tailwind CSS', 'GSAP', 'JavaScript'],
                         github: 'https://github.com/kiransth77/profile',
                         icon: 'fas fa-laptop-code',
-                        stars: 0
+                        stars: 0,
+                        language: 'HTML'
+                    },
+                    {
+                        name: 'Guardian IMS',
+                        description: 'Disaster management and community engagement platform used in Australia and Canada for emergency response.',
+                        tech: ['Disaster Management', 'Node.js', 'React'],
+                        url: 'https://www.qitplus.com/guardian-ims',
+                        icon: 'fas fa-shield-alt',
+                        stars: 0,
+                        language: 'JavaScript'
                     }
                 ];
             }
@@ -446,10 +414,10 @@
         }
         
         // Load GitHub projects button handler
-        document.getElementById('load-github-projects').addEventListener('click', fetchGitHubProjects);
+        // Removed button - now auto-fetching on page load
         
         // Load default projects on page load
-        // fetchGitHubProjects(); // Disabled automatic load to keep button visible for user-triggered fetch
+        fetchGitHubProjects();
         
         const contactForm = signal({
             name: '',
@@ -469,6 +437,7 @@
         effect(() => {
             const skillsData = skills.value;
             const container = document.getElementById('skills-container');
+            if (!container) return; // Exit if container doesn't exist
             container.innerHTML = skillsData.map(skillGroup => `
                 <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
                     <div class="flex items-center mb-4">
@@ -490,6 +459,7 @@
         effect(() => {
             const projectsData = projects.value;
             const container = document.getElementById('projects-container');
+            if (!container) return; // Exit if container doesn't exist
             container.innerHTML = projectsData.map((project, index) => {
                 // Fallbacks for custom projects
                 const icon = project.icon || 'fas fa-briefcase';
@@ -909,7 +879,7 @@
             startCubeRotation();
         }
         
-        function startCubeRotation() {
+        function startCubeRotation(forceXRotation = null) {
             const cube = document.getElementById('project-cube');
             
             if (cubeRotationTimeline) {
@@ -918,17 +888,129 @@
             
             // Set initial rotation for better view
             gsap.set(cube, {
-                rotationX: -20,
+                rotationX: forceXRotation !== null ? forceXRotation : -20,
                 rotationY: 45
             });
             
+            // Randomize Y axis rotation for variety
+            const randomY = Math.random() * 360;
+            const duration = 20 + Math.random() * 10; // 20-30 seconds
+            
             cubeRotationTimeline = gsap.to(cube, {
-                rotationY: '+=360',
-                duration: 25,
-                repeat: -1,
-                ease: 'none',
-                modifiers: {
-                    rotationY: gsap.utils.unitize(value => parseFloat(value) % 360)
+                rotationY: 45 + randomY,
+                duration: duration,
+                ease: 'power1.inOut',
+                onComplete: () => {
+                    // When animation completes, start a new one with new random values
+                    if (!isMouseOver && !isShattered) {
+                        startCubeRotation(forceXRotation);
+                    }
+                }
+            });
+        }
+        
+        // Mouse tracking for cube tilt effect (on top of rotation)
+        const cubeScene = document.getElementById('cube-scene');
+        const cube = document.getElementById('project-cube');
+        let isMouseOver = false;
+        let currentMouseXRotation = -20;
+        
+        // Cube dragging functionality
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let dragStartRotationX = -20;
+        let dragStartRotationY = 45;
+        
+        if (cubeScene && cube) {
+            cubeScene.addEventListener('mouseenter', () => {
+                isMouseOver = true;
+                if (cubeRotationTimeline) {
+                    cubeRotationTimeline.pause();
+                }
+            });
+            
+            cubeScene.addEventListener('mousemove', (e) => {
+                if (isShattered || !isMouseOver) return; // Don't tilt when shattered
+                
+                const rect = cubeScene.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                // Calculate mouse position relative to center (-1 to 1)
+                const x = (e.clientX - centerX) / (rect.width / 2);
+                const y = (e.clientY - centerY) / (rect.height / 2);
+                
+                // Keep X rotation based on mouse movement
+                currentMouseXRotation = Math.max(-15, Math.min(15, y * 15));
+                const tiltY = Math.max(-15, Math.min(15, x * 15));
+                
+                gsap.to(cube, {
+                    rotationX: -20 + currentMouseXRotation,
+                    rotationY: 45 + tiltY,
+                    duration: 0.3,
+                    overwrite: 'auto'
+                });
+            });
+            
+            cubeScene.addEventListener('mouseleave', () => {
+                // Resume rotation when mouse leaves
+                isMouseOver = false;
+                if (!isShattered && cubeRotationTimeline) {
+                    // Resume with preserved X rotation direction from mouse
+                    startCubeRotation(currentMouseXRotation);
+                    cubeRotationTimeline.resume();
+                } else if (!isShattered) {
+                    startCubeRotation(currentMouseXRotation);
+                }
+            });
+            
+            // Also handle when window loses focus
+            window.addEventListener('blur', () => {
+                if (isMouseOver) {
+                    isMouseOver = false;
+                    if (!isShattered && cubeRotationTimeline) {
+                        startCubeRotation(currentMouseXRotation);
+                        cubeRotationTimeline.resume();
+                    }
+                }
+            });
+            
+            // Cube dragging with mouse
+            cubeScene.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                dragStartRotationX = parseFloat(cube.style.transform.match(/rotateX\(([^)]+)deg/)?.[1]) || -20;
+                dragStartRotationY = parseFloat(cube.style.transform.match(/rotateY\(([^)]+)deg/)?.[1]) || 45;
+                if (cubeRotationTimeline) {
+                    cubeRotationTimeline.pause();
+                }
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging || isShattered) return;
+                
+                const deltaX = e.clientX - dragStartX;
+                const deltaY = e.clientY - dragStartY;
+                
+                // Drag sensitivity
+                const sensitivity = 0.5;
+                const newRotationY = dragStartRotationY + deltaX * sensitivity;
+                const newRotationX = dragStartRotationX - deltaY * sensitivity;
+                
+                gsap.to(cube, {
+                    rotationX: newRotationX,
+                    rotationY: newRotationY,
+                    duration: 0,
+                    overwrite: 'auto'
+                });
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                if (!isShattered && !isMouseOver && cubeRotationTimeline) {
+                    cubeRotationTimeline.resume();
                 }
             });
         }
@@ -1072,15 +1154,19 @@
             const modal = document.getElementById('project-detail-modal');
             const modalContent = document.getElementById('modal-content');
             
+            if (!modal || !modalContent) return; // Exit if modal elements don't exist
+            
             document.getElementById('modal-project-name').textContent = project.name;
             document.getElementById('modal-project-description').textContent = project.description;
             
             const techContainer = document.getElementById('modal-project-tech');
+            if (!techContainer) return; // Exit if tech container doesn't exist
             techContainer.innerHTML = (project.tech || []).map(tech => 
                 `<span class="bg-purple-600 px-3 py-1 rounded-full text-sm">${tech}</span>`
             ).join('');
             
             const linksContainer = document.getElementById('modal-project-links');
+            if (!linksContainer) return; // Exit if links container doesn't exist
             linksContainer.innerHTML = '';
             
             if (project.github) {
@@ -1135,8 +1221,66 @@
             const projectsList = projects.value;
             if (projectsList.length > 0) {
                 setTimeout(() => createProjectCube(), 100);
+                
+                // Render projects grid
+                renderProjectsGrid(projectsList);
             }
         });
+        
+        function renderProjectsGrid(projectsList) {
+            const grid = document.getElementById('projects-grid');
+            const loading = document.getElementById('projects-loading');
+            
+            if (!grid) return; // Exit early if grid element doesn't exist
+            
+            // Hide loading spinner if it exists
+            if (loading) {
+                loading.classList.add('hidden');
+            }
+            
+            grid.innerHTML = projectsList.map((project, index) => `
+                <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300 card-hover cursor-pointer group" onclick="projectCardClick(${index})">
+                    <div class="h-32 bg-gradient-to-br ${getGradientClass(index)} flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <i class="${project.icon || 'fas fa-folder-open'} text-4xl opacity-30"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold mb-2 text-white truncate">${project.name}</h3>
+                        <p class="text-sm text-gray-400 mb-4 line-clamp-2">${project.description}</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${(project.tech || []).slice(0, 3).map(tech => 
+                                `<span class="text-xs bg-purple-600/30 text-purple-300 px-2 py-1 rounded">${tech}</span>`
+                            ).join('')}
+                        </div>
+                        <div class="flex gap-3 mt-4">
+                            ${project.github ? `<a href="${project.github}" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded transition"><i class="fab fa-github mr-1"></i>View</a>` : ''}
+                            ${project.url ? `<a href="${project.url}" target="_blank" onclick="event.stopPropagation()" class="text-xs bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded transition"><i class="fas fa-link mr-1"></i>Visit</a>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            loading.classList.add('hidden');
+        }
+        
+        function getGradientClass(index) {
+            const gradients = [
+                'from-purple-600 to-purple-800',
+                'from-blue-600 to-blue-800',
+                'from-indigo-600 to-indigo-800',
+                'from-violet-600 to-violet-800',
+                'from-pink-600 to-pink-800',
+                'from-cyan-600 to-cyan-800'
+            ];
+            return gradients[index % gradients.length];
+        }
+        
+        function projectCardClick(index) {
+            const project = projects.value[index];
+            if (project) {
+                // Animate to show project details
+                showProjectDetail(project);
+            }
+        }
         
         // Smooth scrolling with offset for fixed nav
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
